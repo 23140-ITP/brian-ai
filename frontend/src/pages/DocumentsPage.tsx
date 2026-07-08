@@ -50,7 +50,7 @@ export function DocumentsPage() {
         <UploadCloud size={28} />
         <strong>Drop files or click to ingest</strong>
         <span>PDF and CSV supported - updates the backend corpus when the API is running</span>
-        <input type="file" accept=".pdf,.csv,.txt" onChange={ingest} />
+        <input type="file" accept=".pdf,.csv,.txt" onChange={ingest} aria-label="Upload document for ingestion" />
       </label>
       {steps.length > 0 && (
         <div className="ingest-steps panel">

@@ -61,19 +61,38 @@ export function KnowledgeCapturePage() {
       <form className="panel interview-panel" onSubmit={submit}>
         {step === 0 ? (
           <>
-            <label>Expert Name<input value={expert} onChange={(event) => setExpert(event.target.value)} /></label>
-            <label>Topic / Equipment Area<input value={topic} onChange={(event) => setTopic(event.target.value)} /></label>
+            <label>
+              Expert Name
+              <input
+                aria-label="Expert name"
+                value={expert}
+                onChange={(event) => setExpert(event.target.value)}
+              />
+            </label>
+            <label>
+              Topic / Equipment Area
+              <input
+                aria-label="Topic or equipment area"
+                value={topic}
+                onChange={(event) => setTopic(event.target.value)}
+              />
+            </label>
             <button type="submit">Begin Interview</button>
           </>
         ) : step <= questions.length && questions.length > 0 ? (
           <>
             <p>Question {step} of {questions.length}</p>
             <h2>{questions[step - 1]}</h2>
-            <textarea rows={7} value={answers[step - 1]} onChange={(event) => {
-              const next = [...answers]
-              next[step - 1] = event.target.value
-              setAnswers(next)
-            }} />
+            <textarea
+              aria-label={`Answer for: ${questions[step - 1]}`}
+              rows={7}
+              value={answers[step - 1]}
+              onChange={(event) => {
+                const next = [...answers]
+                next[step - 1] = event.target.value
+                setAnswers(next)
+              }}
+            />
             <div className="form-actions">
               <button type="button" className="secondary" onClick={() => setStep(Math.max(0, step - 1))}>Previous</button>
               <button type="submit">{step === questions.length ? 'Review Answers' : 'Next Question'}</button>

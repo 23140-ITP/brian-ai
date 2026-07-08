@@ -227,7 +227,13 @@ export function FieldPage() {
         <label>
           <Camera size={22} />
           Scan Nameplate
-          <input type="file" accept="image/*" capture="environment" onChange={scan} />
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={scan}
+            aria-label="Upload nameplate image"
+          />
         </label>
         <button type="button" onClick={voiceQuery} disabled={busy}><Mic size={22} /> Voice Query</button>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../services/api'
 import { SystemStatus } from '../services/api'
 import { useAppStore } from '../store/appStore'
+import { RadixSelect } from '../components/ui/radixSelect'
 
 const judgingCriteria = [
   'Relevance and problem understanding',
@@ -19,6 +20,12 @@ const submissionArtifacts = [
   { label: 'Public links checklist', value: 'docs/PUBLIC_LINKS_CHECKLIST.md' },
   { label: 'Submission runbook', value: 'docs/SUBMISSION.md' },
   { label: 'Evidence audit', value: 'docs/IMPLEMENTATION_AUDIT.md' }
+]
+
+const MODEL_OPTIONS = [
+  { value: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
+  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude Sonnet' },
+  { value: 'google/gemini-flash-1.5', label: 'Gemini Flash' }
 ]
 
 export function SettingsPage() {
@@ -42,11 +49,14 @@ export function SettingsPage() {
       <section className="settings-grid">
         <article className="panel">
           <p>Model selection</p>
-          <select value={model} onChange={(event) => setModel(event.target.value)}>
-            <option value="openai/gpt-4o-mini">GPT-4o mini</option>
-            <option value="anthropic/claude-3.5-sonnet">Claude Sonnet</option>
-            <option value="google/gemini-flash-1.5">Gemini Flash</option>
-          </select>
+          <label htmlFor="settings-model-select">AI model</label>
+          <RadixSelect
+            id="settings-model-select"
+            value={model}
+            options={MODEL_OPTIONS}
+            onValueChange={setModel}
+            ariaLabel="Select AI model"
+          />
         </article>
         <article className="panel">
           <p>API connection</p>

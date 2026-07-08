@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAppStore } from '../../store/appStore'
+import { RadixSelect } from '../ui/radixSelect'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: BarChart3 },
@@ -22,6 +23,12 @@ const navItems = [
   { to: '/field', label: 'Field Mode', icon: Smartphone },
   { to: '/capture', label: 'Expert Capture', icon: Mic2 },
   { to: '/settings', label: 'Settings', icon: Settings }
+]
+
+const MODEL_OPTIONS = [
+  { value: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
+  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude Sonnet' },
+  { value: 'google/gemini-flash-1.5', label: 'Gemini Flash' }
 ]
 
 export function Layout() {
@@ -61,11 +68,14 @@ export function Layout() {
           </div>
           <div className="topbar-actions">
             <span className="live-dot"><Radar size={14} /> Live demo</span>
-            <select value={model} onChange={(event) => setModel(event.target.value)} aria-label="Select AI model">
-              <option value="openai/gpt-4o-mini">GPT-4o mini</option>
-              <option value="anthropic/claude-3.5-sonnet">Claude Sonnet</option>
-              <option value="google/gemini-flash-1.5">Gemini Flash</option>
-            </select>
+            <label htmlFor="topbar-model-select" className="sr-only">AI model</label>
+            <RadixSelect
+              value={model}
+              options={MODEL_OPTIONS}
+              onValueChange={setModel}
+              ariaLabel="Select AI model"
+              id="topbar-model-select"
+            />
           </div>
         </header>
         <main>
