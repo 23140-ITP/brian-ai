@@ -17,4 +17,4 @@ if [ ! -f /data/chroma/.seeded ]; then
   cp -r /data/chroma_index/. /data/chroma/ 2>/dev/null || true
   touch /data/chroma/.seeded
 fi
-exec uvicorn main:app --host 0.0.0.0 --port 8000
+exec uvicorn main:app --host 0.0.0.0 --port "${PORT:-8000}"
