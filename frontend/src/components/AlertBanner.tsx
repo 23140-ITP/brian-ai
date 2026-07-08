@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Alert } from '../data/mock'
 
 type AlertBannerProps = {
@@ -6,6 +7,7 @@ type AlertBannerProps = {
 }
 
 export function AlertBanner({ alerts }: AlertBannerProps) {
+  const navigate = useNavigate()
   const primary = alerts.find((alert) => alert.severity === 'HIGH') || alerts[0]
 
   if (!primary) return null
@@ -18,7 +20,7 @@ export function AlertBanner({ alerts }: AlertBannerProps) {
         <strong>{primary.tag}: {primary.message}</strong>
         <span>{primary.evidence}</span>
       </div>
-      <button type="button">Open evidence</button>
+      <button type="button" onClick={() => navigate('/compliance')}>Open evidence</button>
     </section>
   )
 }
