@@ -6,7 +6,6 @@ __pycache__/
 *.pyc
 *.log
 *.err
-README.md
 data/
 docs/
 frontend/design-concept.png
