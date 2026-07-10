@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brian-ai-field-v3'
+const CACHE_NAME = 'brian-ai-field-v4-shadcn-admin'
 const API_CACHE_NAME = 'brian-ai-api-v1'
 const SHELL = ['/', '/index.html', '/field', '/manifest.json', '/favicon.svg', '/icon-192.png', '/icon-512.png']
 

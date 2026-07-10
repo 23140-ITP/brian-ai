@@ -2,6 +2,8 @@ import { lazy, ReactNode, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { PageErrorBoundary } from './components/PageErrorBoundary'
+import { Card, CardContent, CardHeader } from './components/ui/card'
+import { Skeleton } from './components/ui/skeleton'
 
 const CompliancePage = lazy(() => import('./pages/CompliancePage').then((module) => ({ default: module.CompliancePage })))
 const CopilotPage = lazy(() => import('./pages/CopilotPage').then((module) => ({ default: module.CopilotPage })))
@@ -15,7 +17,20 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage').then((module) => 
 function withBoundary(pageName: string, element: ReactNode) {
   return (
     <PageErrorBoundary pageName={pageName}>
-      <Suspense fallback={<div className="route-loading panel">Loading {pageName}...</div>}>
+      <Suspense
+        fallback={
+          <Card aria-label={`Loading ${pageName}`}>
+            <CardHeader>
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-72 max-w-full" />
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <Skeleton className="h-28 w-full" />
+              <Skeleton className="h-28 w-full" />
+            </CardContent>
+          </Card>
+        }
+      >
         {element}
       </Suspense>
     </PageErrorBoundary>

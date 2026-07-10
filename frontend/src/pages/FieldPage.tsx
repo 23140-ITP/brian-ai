@@ -1,5 +1,28 @@
-import { Camera, Download, Mic, Sun } from 'lucide-react'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ArrowLeft, Camera, Download, Mic, Sun } from 'lucide-react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import { Empty, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { Field, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput
+} from '@/components/ui/input-group'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 import { api } from '../services/api'
 import { useAppStore } from '../store/appStore'
 
@@ -40,17 +63,31 @@ const FIELD_CACHE_KEY = 'brian-ai-field-answer-history-v1'
 const LEGACY_FIELD_CACHE_KEY = 'brian-ai-last-field-answer'
 const MAX_FIELD_CACHE_ENTRIES = 5
 
+function isFieldAnswerCacheEntry(value: unknown): value is FieldAnswerCacheEntry {
+  if (!value || typeof value !== 'object') return false
+  const record = value as Record<string, unknown>
+  return typeof record.id === 'string'
+    && typeof record.tag === 'string'
+    && typeof record.answer === 'string'
+    && typeof record.savedAt === 'string'
+}
+
 function loadCachedFieldAnswers(): FieldAnswerCacheEntry[] {
   try {
     const raw = localStorage.getItem(FIELD_CACHE_KEY)
-    if (raw) return JSON.parse(raw).slice(0, MAX_FIELD_CACHE_ENTRIES)
+    if (raw) {
+      const parsed: unknown = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        return parsed.filter(isFieldAnswerCacheEntry).slice(0, MAX_FIELD_CACHE_ENTRIES)
+      }
+    }
+    const legacyAnswer = localStorage.getItem(LEGACY_FIELD_CACHE_KEY)
+    return legacyAnswer
+      ? [{ id: 'legacy-field-answer', tag: 'Cached', answer: legacyAnswer, savedAt: new Date().toISOString() }]
+      : []
   } catch {
     return []
   }
-  const legacyAnswer = localStorage.getItem(LEGACY_FIELD_CACHE_KEY)
-  return legacyAnswer
-    ? [{ id: 'legacy-field-answer', tag: 'Cached', answer: legacyAnswer, savedAt: new Date().toISOString() }]
-    : []
 }
 
 export function FieldPage() {
@@ -63,9 +100,10 @@ export function FieldPage() {
   const [cachedAnswers, setCachedAnswers] = useState<FieldAnswerCacheEntry[]>(loadCachedFieldAnswers)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [installStatus, setInstallStatus] = useState('Offline shell ready after first load.')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', sunlightMode ? '#ffffff' : '#0a0d12')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', sunlightMode ? '#ffffff' : '#0f172a')
   }, [sunlightMode])
 
   useEffect(() => {
@@ -103,8 +141,12 @@ export function FieldPage() {
     }
     setCachedAnswers((current) => {
       const next = [entry, ...current.filter((item) => item.answer !== nextAnswer)].slice(0, MAX_FIELD_CACHE_ENTRIES)
-      localStorage.setItem(FIELD_CACHE_KEY, JSON.stringify(next))
-      localStorage.setItem(LEGACY_FIELD_CACHE_KEY, nextAnswer)
+      try {
+        localStorage.setItem(FIELD_CACHE_KEY, JSON.stringify(next))
+        localStorage.setItem(LEGACY_FIELD_CACHE_KEY, nextAnswer)
+      } catch {
+        // Keep the in-memory cache usable when storage is unavailable or full.
+      }
       return next
     })
   }
@@ -207,75 +249,176 @@ export function FieldPage() {
   }
 
   return (
-    <main className={`field-page ${sunlightMode ? 'sunlight-mode' : ''}`}>
-      <header>
-        <div className="field-header-line">
-          <strong>Brian AI Field - {tag}</strong>
-        </div>
-        {installPrompt && (
-          <button type="button" className="secondary" onClick={installFieldApp}><Download size={18} /> Install Field PWA</button>
-        )}
-        <button type="button" onClick={() => setSunlightMode(!sunlightMode)}><Sun size={18} /> Sunlight Mode</button>
-      </header>
-      <p className="install-status">{installStatus}</p>
-      <section className="field-card">
-        <p>Equipment tag</p>
-        <h1>{tag}</h1>
-        <span>{busy ? 'Reading nameplate and querying documents...' : 'Camera OCR ready'}</span>
-      </section>
-      <div className="field-actions">
-        <label>
-          <Camera size={22} />
-          Scan Nameplate
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={scan}
-            aria-label="Upload nameplate image"
-          />
-        </label>
-        <button type="button" onClick={voiceQuery} disabled={busy}><Mic size={22} /> Voice Query</button>
-      </div>
-      <p className="voice-status">{voiceStatus}</p>
-      <div className="manual-tag-row">
-        <input
-          aria-label="Manual equipment tag"
-          value={manualTag}
-          onChange={(event) => setManualTag(event.target.value)}
-          placeholder="Type tag manually"
-        />
-        <button type="button" onClick={manualQuery} disabled={busy}>Lookup</button>
-      </div>
-      <article className="field-answer">
-        <strong>Answer</strong>
-        <p>{answer}</p>
-      </article>
-      <section className="field-cache">
-        <div>
-          <strong>Offline answer cache</strong>
-          <span>{cachedAnswers.length}/5 saved</span>
-        </div>
-        {cachedAnswers.length === 0 ? (
-          <p>No field answers cached yet.</p>
-        ) : (
-          cachedAnswers.map((item) => (
-            <button
-              key={item.id}
+    <main className={cn(
+      'min-h-screen bg-background p-4 text-foreground sm:p-6 lg:p-8',
+      sunlightMode && 'sunlight-mode'
+    )}>
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
+        <header className="flex flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            <Button asChild type="button" variant="ghost" size="icon" aria-label="Back to Command Center">
+              <Link to="/">
+                <ArrowLeft />
+              </Link>
+            </Button>
+            <h1 className="min-w-0 text-xl font-semibold tracking-tight">Brian AI Field - {tag}</h1>
+          </div>
+          <div className="flex flex-col gap-3 sm:items-end">
+            {installPrompt && (
+              <Button type="button" variant="outline" onClick={installFieldApp}>
+                <Download data-icon="inline-start" />
+                Install Field PWA
+              </Button>
+            )}
+            <Field orientation="horizontal" className="w-auto">
+              <FieldLabel htmlFor="sunlight-mode-switch">
+                <Sun aria-hidden="true" />
+                Sunlight Mode
+              </FieldLabel>
+              <Switch
+                id="sunlight-mode-switch"
+                checked={sunlightMode}
+                onCheckedChange={setSunlightMode}
+                aria-label="Toggle sunlight mode"
+              />
+            </Field>
+          </div>
+        </header>
+
+        <Alert aria-live="polite">
+          <Download aria-hidden="true" />
+          <AlertTitle>Field app status</AlertTitle>
+          <AlertDescription>{installStatus}</AlertDescription>
+        </Alert>
+
+        <Card className="min-h-[42vh] justify-center">
+          <CardHeader className="items-center text-center">
+            <CardTitle>Equipment tag</CardTitle>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <p className="max-w-full break-words text-center text-5xl font-bold tracking-tight sm:text-7xl lg:text-8xl">{tag}</p>
+          </CardContent>
+          <CardFooter className="justify-center">
+            <p className="text-center text-sm text-muted-foreground" aria-live="polite">
+              {busy ? 'Reading nameplate and querying documents...' : 'Camera OCR ready'}
+            </p>
+          </CardFooter>
+        </Card>
+
+        <FieldGroup className="gap-3 sm:flex-row">
+          <Field>
+            <FieldLabel htmlFor="field-nameplate-upload" className="sr-only">Upload nameplate image</FieldLabel>
+            <Input
+              ref={fileInputRef}
+              id="field-nameplate-upload"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={scan}
+              className="hidden"
+            />
+            <Button
               type="button"
-              onClick={() => {
-                setTag(item.tag)
-                setManualTag(item.tag)
-                setAnswer(item.answer)
-              }}
+              size="lg"
+              className="w-full"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
             >
-              <strong>{item.tag}</strong>
-              <span>{new Date(item.savedAt).toLocaleString()}</span>
-              <p>{item.answer}</p>
-            </button>
-          ))
-        )}
-      </section>
+              <Camera data-icon="inline-start" />
+              Scan Nameplate
+            </Button>
+          </Field>
+          <Field>
+            <FieldTitle className="sr-only">Voice query</FieldTitle>
+            <Button type="button" size="lg" className="w-full" onClick={voiceQuery} disabled={busy}>
+              <Mic data-icon="inline-start" />
+              Voice Query
+            </Button>
+          </Field>
+        </FieldGroup>
+
+        <Alert aria-live="polite">
+          <Mic aria-hidden="true" />
+          <AlertTitle>Voice query</AlertTitle>
+          <AlertDescription>{voiceStatus}</AlertDescription>
+        </Alert>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Manual equipment tag</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="manual-equipment-tag" className="sr-only">Manual equipment tag</FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    id="manual-equipment-tag"
+                    aria-label="Manual equipment tag"
+                    value={manualTag}
+                    onChange={(event) => setManualTag(event.target.value)}
+                    placeholder="Type tag manually"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton variant="secondary" size="sm" onClick={manualQuery} disabled={busy}>Lookup</InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
+            </FieldGroup>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Answer</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="leading-relaxed text-muted-foreground" aria-live="polite">{answer}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Offline answer cache</CardTitle>
+            <CardAction>
+              <Badge variant="secondary">{cachedAnswers.length}/5 saved</Badge>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            {cachedAnswers.length === 0 ? (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyTitle>No field answers cached yet.</EmptyTitle>
+                </EmptyHeader>
+              </Empty>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {cachedAnswers.map((item) => (
+                  <Button
+                    key={item.id}
+                    type="button"
+                    variant="outline"
+                    className="h-auto w-full justify-start whitespace-normal p-0 text-left"
+                    onClick={() => {
+                      setTag(item.tag)
+                      setManualTag(item.tag)
+                      setAnswer(item.answer)
+                    }}
+                  >
+                    <span className="flex min-w-0 flex-1 flex-col items-start gap-2 p-3">
+                      <span className="flex w-full flex-wrap items-center justify-between gap-2">
+                        <strong>{item.tag}</strong>
+                        <Badge variant="outline">{new Date(item.savedAt).toLocaleString()}</Badge>
+                      </span>
+                      <span className="line-clamp-2 text-muted-foreground">{item.answer}</span>
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </main>
   )
 }

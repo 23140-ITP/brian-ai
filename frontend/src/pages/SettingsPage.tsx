@@ -1,8 +1,24 @@
 import { useEffect, useState } from 'react'
-import { api } from '../services/api'
-import { SystemStatus } from '../services/api'
+import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { api, SystemStatus } from '../services/api'
 import { useAppStore } from '../store/appStore'
-import { RadixSelect } from '../components/ui/radixSelect'
 
 const judgingCriteria = [
   'Relevance and problem understanding',
@@ -28,6 +44,34 @@ const MODEL_OPTIONS = [
   { value: 'google/gemini-flash-1.5', label: 'Gemini Flash' }
 ]
 
+type StatusCardProps = {
+  label: string
+  value: string
+  description: string
+}
+
+function StatusCard({ label, value, description }: StatusCardProps) {
+  return (
+    <Card className="min-h-44">
+      <CardHeader>
+        <CardDescription>{label}</CardDescription>
+        <CardTitle>{value}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  )
+}
+
+type ReadinessStatus = NonNullable<SystemStatus['readiness']>['checks'][number]['status']
+
+function readinessBadgeVariant(status: ReadinessStatus) {
+  if (status === 'missing') return 'destructive' as const
+  if (status === 'ready') return 'default' as const
+  return 'secondary' as const
+}
+
 export function SettingsPage() {
   const { model, setModel } = useAppStore()
   const [health, setHealth] = useState('checking')
@@ -39,111 +83,147 @@ export function SettingsPage() {
   }, [])
 
   return (
-    <div className="page settings-page">
-      <section className="page-heading compact">
-        <div>
-          <h1>Settings</h1>
-          <p>Demo configuration, model selection, and architecture status.</p>
-        </div>
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-sm text-muted-foreground">Demo configuration, model selection, and architecture status.</p>
+      </header>
+
+      <section aria-label="System configuration" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <Card className="min-h-44">
+          <CardHeader>
+            <CardTitle>Model selection</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="settings-model-select">AI model</FieldLabel>
+                <Select value={model} onValueChange={setModel}>
+                  <SelectTrigger id="settings-model-select" className="w-full" aria-label="Select AI model">
+                    <SelectValue placeholder="Select AI model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {MODEL_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </FieldGroup>
+          </CardContent>
+        </Card>
+
+        <StatusCard
+          label="API connection"
+          value={health}
+          description="Frontend falls back to local demo data when backend services are unavailable."
+        />
+        <StatusCard
+          label="Architecture"
+          value="React + FastAPI"
+          description="Designed for ChromaDB, Neo4j AuraDB, OpenRouter, OCR fallback, and Railway/Vercel deployment."
+        />
+        <StatusCard
+          label="RAG provider"
+          value={status?.rag.mode || 'checking'}
+          description={status?.rag.openrouterConfigured
+            ? 'OpenRouter live generation enabled.'
+            : 'Using deterministic local retrieval until OPENROUTER_API_KEY is enabled.'}
+        />
+        <StatusCard
+          label="Graph provider"
+          value={status?.graph.mode || 'checking'}
+          description={status?.graph.keepAliveEnabled
+            ? `Neo4j AuraDB keep-alive enabled every ${status.graph.heartbeatIntervalMinutes} minutes.`
+            : status?.graph.configured
+              ? 'Neo4j credentials are present; install the driver in production to enable AuraDB keep-alive.'
+              : 'Local corpus graph is active; Neo4j credentials can be added without frontend changes.'}
+        />
+        <StatusCard
+          label="Index cache"
+          value={status ? `${status.index.cache.chunks} chunks` : 'checking'}
+          description={status ? `${status.index.mode} across ${status.index.cache.files} corpus files.` : 'Loading index status.'}
+        />
+        <StatusCard
+          label="Field OCR"
+          value={status?.ocr?.mode || 'checking'}
+          description={status?.ocr?.visionConfigured
+            ? 'OpenRouter vision is configured for nameplate reads.'
+            : status?.ocr?.tesseractAvailable
+              ? 'Using local Tesseract OCR with deterministic tag fallback.'
+              : 'Using deterministic tag extraction until OpenRouter vision is enabled.'}
+        />
       </section>
-      <section className="settings-grid">
-        <article className="panel">
-          <p>Model selection</p>
-          <label htmlFor="settings-model-select">AI model</label>
-          <RadixSelect
-            id="settings-model-select"
-            value={model}
-            options={MODEL_OPTIONS}
-            onValueChange={setModel}
-            ariaLabel="Select AI model"
-          />
-        </article>
-        <article className="panel">
-          <p>API connection</p>
-          <h2 className={health === 'ok' ? 'ok-text' : ''}>{health}</h2>
-          <span>Frontend falls back to local demo data when backend services are unavailable.</span>
-        </article>
-        <article className="panel">
-          <p>Architecture</p>
-          <h2>React + FastAPI</h2>
-          <span>Designed for ChromaDB, Neo4j AuraDB, OpenRouter, OCR fallback, and Railway/Vercel deployment.</span>
-        </article>
-        <article className="panel">
-          <p>RAG provider</p>
-          <h2>{status?.rag.mode || 'checking'}</h2>
-          <span>{status?.rag.openrouterConfigured ? 'OpenRouter live generation enabled.' : 'Using deterministic local retrieval until OPENROUTER_API_KEY is enabled.'}</span>
-        </article>
-        <article className="panel">
-          <p>Graph provider</p>
-          <h2>{status?.graph.mode || 'checking'}</h2>
-          <span>
-            {status?.graph.keepAliveEnabled
-              ? `Neo4j AuraDB keep-alive enabled every ${status.graph.heartbeatIntervalMinutes} minutes.`
-              : status?.graph.configured
-                ? 'Neo4j credentials are present; install the driver in production to enable AuraDB keep-alive.'
-                : 'Local corpus graph is active; Neo4j credentials can be added without frontend changes.'}
-          </span>
-        </article>
-        <article className="panel">
-          <p>Index cache</p>
-          <h2>{status ? `${status.index.cache.chunks} chunks` : 'checking'}</h2>
-          <span>{status ? `${status.index.mode} across ${status.index.cache.files} corpus files.` : 'Loading index status.'}</span>
-        </article>
-        <article className="panel">
-          <p>Field OCR</p>
-          <h2>{status?.ocr?.mode || 'checking'}</h2>
-          <span>
-            {status?.ocr?.visionConfigured
-              ? 'OpenRouter vision is configured for nameplate reads.'
-              : status?.ocr?.tesseractAvailable
-                ? 'Using local Tesseract OCR with deterministic tag fallback.'
-                : 'Using deterministic tag extraction until OpenRouter vision is enabled.'}
-          </span>
-        </article>
-      </section>
+
       {status?.readiness && (
-        <section className="panel production-readiness">
-          <div>
-            <p>Production readiness</p>
-            <h2>{status.readiness.productionReady ? 'Ready for public submission' : 'Local demo ready, deployment steps remain'}</h2>
-            <span>
+        <Card>
+          <CardHeader>
+            <CardDescription>Production readiness</CardDescription>
+            <CardTitle>{status.readiness.productionReady ? 'Ready for public submission' : 'Local demo ready, deployment steps remain'}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {status.deployment.frontendPublicUrl && status.deployment.backendPublicUrl
                 ? `${status.deployment.frontendPublicUrl} connected to ${status.deployment.backendPublicUrl}.`
                 : `Environment: ${status.deployment.environment}. Public URLs are recorded after Vercel and Railway deploys.`}
-            </span>
-          </div>
-          <div className="readiness-list">
-            {status.readiness.checks.map((check) => (
-              <article className={`readiness-row ${check.status}`} key={check.id}>
-                <div>
-                  <strong>{check.label}</strong>
-                  <span>{check.detail}</span>
-                </div>
-                <b>{check.status}</b>
-              </article>
-            ))}
-          </div>
-        </section>
+            </p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {status.readiness.checks.map((check) => (
+                <Card key={check.id} size="sm">
+                  <CardHeader>
+                    <CardTitle>{check.label}</CardTitle>
+                    <CardAction>
+                      <Badge variant={readinessBadgeVariant(check.status)}>{check.status}</Badge>
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{check.detail}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
-      <section className="panel submission-readiness">
-        <div>
-          <p>Hackathon submission readiness</p>
-          <h2>Brian AI is packaged around the judging story.</h2>
-          <span>Working prototype, pitch deck, demo video script, and verification evidence are tracked as first-class submission artifacts for public-link submission.</span>
-        </div>
-        <div className="submission-columns">
-          <div>
-            <strong>Judging fit</strong>
-            {judgingCriteria.map((item) => <span key={item}>{item}</span>)}
+
+      <Card>
+        <CardHeader>
+          <CardDescription>Hackathon submission readiness</CardDescription>
+          <CardTitle>Brian AI is packaged around the judging story.</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <p className="text-sm leading-relaxed text-muted-foreground">Working prototype, pitch deck, demo video script, and verification evidence are tracked as first-class submission artifacts for public-link submission.</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card size="sm">
+              <CardHeader>
+                <CardTitle>Judging fit</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+                  {judgingCriteria.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </CardContent>
+            </Card>
+            <Card size="sm">
+              <CardHeader>
+                <CardTitle>Artifacts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-col gap-2 text-sm">
+                  {submissionArtifacts.map((artifact) => (
+                    <li key={artifact.label} className="flex flex-col gap-0.5">
+                      <strong className="font-medium">{artifact.label}</strong>
+                      <span className="text-muted-foreground">{artifact.value}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           </div>
-          <div>
-            <strong>Artifacts</strong>
-            {submissionArtifacts.map((artifact) => (
-              <span key={artifact.label}><b>{artifact.label}</b> {artifact.value}</span>
-            ))}
-          </div>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   )
 }
