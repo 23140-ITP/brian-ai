@@ -42,3 +42,9 @@ Notes on scope limits:
 8) Step: Input labeling cleanup (2026-07-09)
    - Health: good
    - Findings: Added explicit `aria-label`s on interview step-0 inputs in `KnowledgeCapturePage` (`Expert Name`, `Topic / Equipment Area`) to improve accessibility consistency with prior file/text input fixes.
+
+9) Step: Full shadcn-admin overhaul (2026-07-10)
+   - Health: good
+   - Findings: The earlier Radix wrapper migration is now historical. Dedicated `RadixSelect`, `radixDialog`, and `radixTooltip` wrappers were replaced by the shared shadcn/ui component layer across all eight routes.
+   - Verification: `npm.cmd run lint`, `npm.cmd run build`, and the full production browser smoke pass now succeed. The browser pass covers all routes at desktop and mobile sizes, the collapsible desktop sidebar, mobile sheet navigation, benchmark dialog, cross-route Copilot handoffs, Knowledge Graph layout, and Field PWA cache and sunlight mode.
+   - Current UI: the app uses the shadcn-admin shell, responsive sidebar navigation, command search, synchronized model selection, and light/dark/system themes.
