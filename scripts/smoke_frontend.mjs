@@ -6,6 +6,7 @@ import path from 'node:path'
 const FRONTEND_URL = process.env.BRIAN_AI_FRONTEND_URL || 'http://127.0.0.1:5182'
 const DEBUG_PORT = Number(process.env.BRIAN_AI_CDP_PORT || 9231)
 const SCREENSHOT_DIR = process.env.BRIAN_AI_SMOKE_SCREENSHOT_DIR || path.join('docs', 'frontend-smoke')
+const FIELD_CACHE_NAME = 'brian-ai-field-v4-shadcn-admin'
 
 const ROUTES = [
   ['/', 'Brian AI Command Center'],
@@ -106,7 +107,8 @@ async function inspectRoute(send, route, expectedText) {
         errorBoundary: text.includes('needs a refresh'),
         overflowX: bodyWidth > viewportWidth + 1,
         bodyWidth,
-        viewportWidth
+        viewportWidth,
+        textPreview: text.trim().replace(/\s+/g, ' ').slice(0, 240)
       }
     })()
   `)
@@ -124,7 +126,8 @@ async function clickComplianceHandoff(send) {
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
       const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim() === 'Ask Copilot')
       if (!button) return { ok: false, reason: 'Ask Copilot button missing' }
-      const clause = document.querySelector('.clause-drawer > p')?.textContent || ''
+      const clause = button.closest('[data-slot="card"]')?.querySelector('[data-slot="card-description"]')?.textContent?.trim() || ''
+      if (!clause) return { ok: false, reason: 'selected clause context missing' }
       button.click()
       for (let i = 0; i < 80; i += 1) {
         const textarea = document.querySelector('textarea[aria-label="Ask Brian AI"]')
@@ -149,11 +152,17 @@ async function clickGraphPath(send) {
       if (!button) return { ok: false, reason: 'path button missing' }
       button.click()
       for (let i = 0; i < 80; i += 1) {
-        if (document.querySelectorAll('.graph-path-results article').length > 0) break
+        if (document.querySelectorAll('[data-slot="alert"] [data-slot="alert-title"]').length > 0) break
         await wait(100)
       }
-      const cards = document.querySelectorAll('.graph-path-results article').length
-      return { ok: cards > 0, cards }
+      const cards = document.querySelectorAll('[data-slot="alert"] [data-slot="alert-title"]').length
+      const graph = document.querySelector('svg[aria-label="Equipment relationship graph"]')
+      const nodeY = [...(graph?.querySelectorAll('circle') || [])].map((circle) => Number(circle.getAttribute('cy') || 0))
+      const maxNodeY = nodeY.length ? Math.max(...nodeY) : 0
+      const viewBoxHeight = graph?.viewBox?.baseVal?.height || 0
+      const wrappedLabels = [...(graph?.querySelectorAll('text') || [])].filter((label) => label.querySelectorAll('tspan').length > 1).length
+      const layoutOk = viewBoxHeight >= maxNodeY + 20 && wrappedLabels > 0
+      return { ok: cards > 0 && layoutOk, cards, maxNodeY, viewBoxHeight, wrappedLabels, layoutOk }
     })()
   `)
   if (!result.ok) throw new Error(`Knowledge graph path smoke failed: ${JSON.stringify(result)}`)
@@ -167,11 +176,12 @@ async function verifyFieldPwa(send) {
     (async () => {
       if ('serviceWorker' in navigator) await navigator.serviceWorker.ready
       const cacheNames = 'caches' in window ? await caches.keys() : []
-      const cache = cacheNames.includes('brian-ai-field-v3') ? await caches.open('brian-ai-field-v3') : null
+      const cacheName = ${JSON.stringify(FIELD_CACHE_NAME)}
+      const cache = cacheNames.includes(cacheName) ? await caches.open(cacheName) : null
       return {
         swSupported: 'serviceWorker' in navigator,
         controlled: Boolean(navigator.serviceWorker?.controller),
-        hasCache: cacheNames.includes('brian-ai-field-v3'),
+        hasCache: cacheNames.includes(cacheName),
         cachedField: cache ? Boolean(await cache.match('/field')) : false,
         textOk: (document.body.textContent || '').includes('Brian AI Field')
       }
@@ -180,6 +190,163 @@ async function verifyFieldPwa(send) {
   if (!result.swSupported || !result.hasCache || !result.cachedField || !result.textOk) {
     throw new Error(`Field PWA smoke failed: ${JSON.stringify(result)}`)
   }
+  return result
+}
+
+async function verifyMobileShell(send) {
+  await send('Emulation.setDeviceMetricsOverride', {
+    width: 375,
+    height: 812,
+    deviceScaleFactor: 1,
+    mobile: true,
+  })
+
+  const routes = []
+  for (const [route, expectedText] of ROUTES) routes.push(await inspectRoute(send, route, expectedText))
+
+  await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
+  await delay(1800)
+  const navigation = await evaluate(send, `
+    (async () => {
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const toggle = document.querySelector('[data-slot="sidebar-trigger"]')
+      if (!toggle) return { ok: false, reason: 'mobile sidebar trigger missing' }
+      toggle.click()
+      for (let i = 0; i < 20 && !document.querySelector('[role="dialog"]'); i += 1) await wait(50)
+      const dialog = document.querySelector('[role="dialog"]')
+      const link = dialog?.querySelector('a[href="/documents"]')
+      if (!link) return { ok: false, reason: 'Documents link missing from mobile sidebar' }
+      link.click()
+      for (let i = 0; i < 40; i += 1) {
+        if (location.pathname === '/documents' && !document.querySelector('[role="dialog"]')) break
+        await wait(50)
+      }
+      return {
+        ok: location.pathname === '/documents' && !document.querySelector('[role="dialog"]'),
+        route: location.pathname,
+        sidebarClosed: !document.querySelector('[role="dialog"]')
+      }
+    })()
+  `)
+  if (!navigation.ok) throw new Error(`Mobile sidebar smoke failed: ${JSON.stringify(navigation)}`)
+  return { routes: routes.length, navigation }
+}
+
+async function verifyDashboardDialog(send) {
+  await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
+  await delay(1800)
+  const result = await evaluate(send, `
+    (async () => {
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim() === 'Benchmark Mode')
+      if (!button) return { ok: false, reason: 'Benchmark Mode button missing' }
+      button.click()
+      for (let i = 0; i < 20 && !document.querySelector('[role="dialog"]'); i += 1) await wait(50)
+      const dialog = document.querySelector('[role="dialog"]')
+      const rows = dialog?.querySelectorAll('tbody tr').length || 0
+      const close = [...(dialog?.querySelectorAll('button') || [])].find((item) => item.textContent?.trim() === 'Close')
+      close?.click()
+      for (let i = 0; i < 20 && document.querySelector('[role="dialog"]'); i += 1) await wait(50)
+      return { ok: rows >= 15 && !document.querySelector('[role="dialog"]'), rows, closed: !document.querySelector('[role="dialog"]') }
+    })()
+  `)
+  if (!result.ok) throw new Error(`Dashboard benchmark smoke failed: ${JSON.stringify(result)}`)
+  return result
+}
+
+async function verifyCaptureStart(send) {
+  await send('Page.navigate', { url: `${FRONTEND_URL}/capture?smoke=${Date.now()}` })
+  await delay(2200)
+  const result = await evaluate(send, `
+    (async () => {
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim() === 'Begin Interview')
+      if (!button) return { ok: false, reason: 'Begin Interview button missing' }
+      button.click()
+      for (let i = 0; i < 20 && !document.querySelector('textarea[aria-label^="Answer for:"]'); i += 1) await wait(50)
+      const answer = document.querySelector('textarea[aria-label^="Answer for:"]')
+      return { ok: Boolean(answer), question: answer?.getAttribute('aria-label') || '' }
+    })()
+  `)
+  if (!result.ok) throw new Error(`Expert Capture start smoke failed: ${JSON.stringify(result)}`)
+  return result
+}
+
+async function verifyGraphDocumentHandoff(send) {
+  await send('Page.navigate', { url: `${FRONTEND_URL}/knowledge-graph?smoke=${Date.now()}` })
+  await delay(2200)
+  const result = await evaluate(send, `
+    (async () => {
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const node = document.querySelector('[role="button"][aria-label="Select P-204B"]')
+      if (!node) return { ok: false, reason: 'P-204B graph node missing' }
+      node.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await wait(100)
+      const filename = 'Pump-P204-Vibration-Analysis-2024.pdf'
+      const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.includes(filename))
+      if (!button) return { ok: false, reason: 'related document button missing' }
+      button.click()
+      for (let i = 0; i < 60; i += 1) {
+        const selected = [...document.querySelectorAll('button[aria-pressed="true"]')].some((item) => item.textContent?.includes(filename))
+        if (location.pathname === '/copilot' && selected) return { ok: true, route: location.pathname, filename }
+        await wait(50)
+      }
+      return { ok: false, route: location.pathname, reason: 'active document context not preserved' }
+    })()
+  `)
+  if (!result.ok) throw new Error(`Graph document handoff smoke failed: ${JSON.stringify(result)}`)
+  return result
+}
+
+async function verifyFieldInteraction(send) {
+  await send('Page.navigate', { url: `${FRONTEND_URL}/field?smoke=${Date.now()}` })
+  await delay(1800)
+  const result = await evaluate(send, `
+    (async () => {
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const input = document.querySelector('input[aria-label="Manual equipment tag"]')
+      const lookup = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim() === 'Lookup')
+      const sunlight = document.querySelector('[role="switch"][aria-label="Toggle sunlight mode"]')
+      if (!input || !lookup || !sunlight) return { ok: false, reason: 'field controls missing' }
+      const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+      valueSetter?.call(input, 'V-301')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      lookup.click()
+      for (let i = 0; i < 80 && !document.querySelector('h1')?.textContent?.includes('V-301'); i += 1) await wait(50)
+      sunlight.click()
+      await wait(100)
+      const sunlightApplied = Boolean(document.querySelector('main.sunlight-mode')) && document.querySelector('meta[name="theme-color"]')?.getAttribute('content') === '#ffffff'
+      sunlight.click()
+      return {
+        ok: document.querySelector('h1')?.textContent?.includes('V-301') && sunlightApplied,
+        tag: document.querySelector('h1')?.textContent || '',
+        sunlightApplied
+      }
+    })()
+  `)
+  if (!result.ok) throw new Error(`Field interaction smoke failed: ${JSON.stringify(result)}`)
+  return result
+}
+
+async function verifyDesktopSidebar(send) {
+  await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+  await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
+  await delay(1800)
+  const result = await evaluate(send, `
+    (async () => {
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const sidebar = document.querySelector('[data-slot="sidebar"]')
+      const toggle = document.querySelector('[data-slot="sidebar-trigger"]')
+      if (!sidebar || !toggle) return { ok: false, reason: 'desktop sidebar controls missing' }
+      toggle.click()
+      for (let i = 0; i < 20 && sidebar.getAttribute('data-state') !== 'collapsed'; i += 1) await wait(50)
+      const collapsed = sidebar.getAttribute('data-state') === 'collapsed'
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, bubbles: true }))
+      for (let i = 0; i < 20 && sidebar.getAttribute('data-state') !== 'expanded'; i += 1) await wait(50)
+      return { ok: collapsed && sidebar.getAttribute('data-state') === 'expanded', collapsed, shortcutExpanded: sidebar.getAttribute('data-state') === 'expanded' }
+    })()
+  `)
+  if (!result.ok) throw new Error(`Desktop sidebar smoke failed: ${JSON.stringify(result)}`)
   return result
 }
 
@@ -212,11 +379,17 @@ async function main() {
     const graph = await clickGraphPath(send)
     const fieldPwa = await verifyFieldPwa(send)
     await screenshot(send, path.join(SCREENSHOT_DIR, 'field-pwa.png'))
+    const dashboardDialog = await verifyDashboardDialog(send)
+    const capture = await verifyCaptureStart(send)
+    const graphDocument = await verifyGraphDocumentHandoff(send)
+    const fieldInteraction = await verifyFieldInteraction(send)
+    const desktopSidebar = await verifyDesktopSidebar(send)
+    const mobile = await verifyMobileShell(send)
     await send('Target.closeTarget', { targetId: target.id }).catch(() => undefined)
     ws.close()
 
     if (exceptions.length) throw new Error(`Browser exceptions: ${exceptions.join('\\n')}`)
-    console.log(JSON.stringify({ routes: routes.length, compliance, graph, fieldPwa, screenshotDir: SCREENSHOT_DIR }, null, 2))
+    console.log(JSON.stringify({ routes: routes.length, compliance, graph, fieldPwa, dashboardDialog, capture, graphDocument, fieldInteraction, desktopSidebar, mobile, screenshotDir: SCREENSHOT_DIR }, null, 2))
   } finally {
     child.kill()
   }

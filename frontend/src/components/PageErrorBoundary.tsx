@@ -1,4 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react'
+import { AlertTriangle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 type PageErrorBoundaryProps = {
   children: ReactNode
@@ -24,12 +27,22 @@ export class PageErrorBoundary extends Component<PageErrorBoundaryProps, PageErr
     if (!this.state.error) return this.props.children
 
     return (
-      <section className="page-error panel" role="alert">
-        <p>Brian AI recovered this view.</p>
-        <h1>{this.props.pageName} needs a refresh</h1>
-        <span>The rest of the app is still available. Retry the view or switch to another workflow.</span>
-        <button type="button" onClick={() => this.setState({ error: null })}>Retry view</button>
-      </section>
+      <Card role="alert" className="mx-auto w-full max-w-xl">
+        <CardHeader>
+          <span className="flex size-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+            <AlertTriangle />
+          </span>
+          <CardTitle>{this.props.pageName} needs a refresh</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Brian AI recovered this view. The rest of the app is still available; retry this workflow when ready.
+          </p>
+        </CardContent>
+        <CardFooter>
+          <Button type="button" onClick={() => this.setState({ error: null })}>Retry view</Button>
+        </CardFooter>
+      </Card>
     )
   }
 }

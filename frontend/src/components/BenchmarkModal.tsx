@@ -2,8 +2,27 @@ import { Download, RotateCw, X } from 'lucide-react'
 import { useState } from 'react'
 import { BenchmarkResult } from '../data/mock'
 import { api } from '../services/api'
-import { UiTooltip } from './ui/radixTooltip'
-import { UiDialog } from './ui/radixDialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 type BenchmarkModalProps = {
   open: boolean
@@ -16,7 +35,9 @@ export function BenchmarkModal({ open, results, onClose }: BenchmarkModalProps) 
   const [spotChecks, setSpotChecks] = useState<Record<number, string>>({})
 
   const correct = results.filter((row) => row.correct).length
-  const avg = results.reduce((sum, row) => sum + row.latencyS, 0) / results.length
+  const avg = results.length
+    ? results.reduce((sum, row) => sum + row.latencyS, 0) / results.length
+    : 0
 
   const exportCsv = () => {
     const header = ['question', 'expected', 'cached_answer', 'correct', 'latency_s']
@@ -48,47 +69,73 @@ export function BenchmarkModal({ open, results, onClose }: BenchmarkModalProps) 
   }
 
   return (
-    <UiDialog open={open} onClose={onClose}>
-      <section
-        className="modal"
-        aria-describedby="benchmark-description"
-        aria-labelledby="benchmark-title"
-      >
-        <header className="modal-header">
-          <div>
-            <p>Benchmark Mode</p>
-            <h2 id="benchmark-title">{correct}/{results.length} correct, {avg.toFixed(1)}s avg latency</h2>
-            <p id="benchmark-description" className="sr-only">Benchmark results and live spot-check controls.</p>
-          </div>
-          <div className="modal-actions">
-            <UiTooltip content="Export benchmark CSV">
-              <button className="icon-button" type="button" onClick={exportCsv} aria-label="Export benchmark CSV">
-                <Download size={18} />
-              </button>
-            </UiTooltip>
-            <button className="icon-button" type="button" onClick={onClose} aria-label="Close benchmark modal">
-              <X size={18} />
-            </button>
-          </div>
-        </header>
-        <div className="benchmark-table">
-          {results.map((row, index) => (
-            <article key={`${row.question}-${index}`} className="benchmark-row">
-              <div>
-                <strong>{row.question}</strong>
-                <span>{row.answer}</span>
-                {spotChecks[index] && <small className="spot-check-result">{spotChecks[index]}</small>}
-              </div>
-              <em className={row.correct ? 'ok' : 'bad'}>{row.correct ? 'Correct' : 'Review'}</em>
-              <small>{row.latencyS.toFixed(1)}s</small>
-              <button className="row-action" type="button" onClick={() => spotCheck(index)} disabled={checking === index}>
-                <RotateCw size={14} />
-                {checking === index ? 'Checking' : 'Spot-check'}
-              </button>
-            </article>
-          ))}
-        </div>
-      </section>
-    </UiDialog>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className="max-w-[min(72rem,calc(100%-2rem))] sm:max-w-[min(72rem,calc(100%-2rem))]">
+        <DialogHeader>
+          <DialogTitle>Benchmark mode</DialogTitle>
+          <DialogDescription>
+            {correct}/{results.length} correct with {avg.toFixed(1)}s average cached latency. Run a live spot-check on any row.
+          </DialogDescription>
+        </DialogHeader>
+        <ScrollArea className="max-h-[65vh] rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Question and cached answer</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Latency</TableHead>
+                <TableHead className="text-right">Verification</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {results.map((row, index) => (
+                <TableRow key={`${row.question}-${index}`}>
+                  <TableCell className="max-w-xl whitespace-normal">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium">{row.question}</span>
+                      <span className="text-sm text-muted-foreground">{row.answer}</span>
+                      {spotChecks[index] && <span className="text-xs text-info">{spotChecks[index]}</span>}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={row.correct ? 'secondary' : 'destructive'}>
+                      {row.correct ? 'Correct' : 'Review'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="tabular-nums">{row.latencyS.toFixed(1)}s</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      onClick={() => spotCheck(index)}
+                      disabled={checking === index}
+                    >
+                      <RotateCw data-icon="inline-start" className={cn(checking === index && 'animate-spin')} />
+                      {checking === index ? 'Checking' : 'Spot-check'}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+        <DialogFooter className="sm:justify-between">
+          <Button variant="outline" type="button" onClick={onClose}>
+            <X data-icon="inline-start" />
+            Close
+          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button type="button" onClick={exportCsv}>
+                <Download data-icon="inline-start" />
+                Export CSV
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Download all benchmark rows</TooltipContent>
+          </Tooltip>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

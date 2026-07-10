@@ -1,9 +1,63 @@
+import { LoaderCircle, Route } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useNavigate } from 'react-router-dom'
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { DocumentMeta, GraphEdge, GraphNode, documents as fallbackDocuments, graphEdges as fallbackEdges, graphNodes as fallbackNodes, scaleData } from '../data/mock'
 import { GraphPathRecord, api } from '../services/api'
 import { useAppStore } from '../store/appStore'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Empty, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { Separator } from '@/components/ui/separator'
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
+import { chartTooltipStyle } from '@/lib/presentation'
+
+const GRAPH_MAX_COLUMNS = 4
+const graphNodeFill: Record<GraphNode['type'], string> = {
+  Equipment: 'fill-primary',
+  Document: 'fill-chart-2',
+  Regulation: 'fill-destructive',
+  Person: 'fill-chart-3',
+  Alert: 'fill-chart-4',
+}
+
+const graphColumns: Record<number, number[]> = {
+  1: [75],
+  2: [54, 96],
+  3: [36, 75, 114],
+  4: [18, 56, 94, 132],
+}
+
+function graphLabelLines(label: string) {
+  if (label.length <= 16) return [label]
+  const words = label.replace(/[-_]/g, ' ').split(/\s+/).filter(Boolean)
+  const lines: string[] = []
+  let current = ''
+
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word
+    if (next.length > 16 && current) {
+      lines.push(current)
+      current = word
+    } else {
+      current = next
+    }
+  })
+  if (current) lines.push(current)
+
+  if (lines.length <= 3) return lines
+  return [...lines.slice(0, 2), `${lines.slice(2).join(' ').slice(0, 15)}…`]
+}
 
 export function KnowledgeGraphPage() {
   const navigate = useNavigate()
@@ -27,11 +81,23 @@ export function KnowledgeGraphPage() {
     api.documents().then(setDocuments)
   }, [])
 
-  const positioned = useMemo(() => nodes.map((node, index) => ({
-    ...node,
-    x: 50 + (index % 3) * 34,
-    y: 22 + Math.floor(index / 3) * 28
-  })), [nodes])
+  const positioned = useMemo(() => nodes.map((node, index) => {
+    const row = Math.floor(index / GRAPH_MAX_COLUMNS)
+    const column = index % GRAPH_MAX_COLUMNS
+    const rowStart = row * GRAPH_MAX_COLUMNS
+    const rowCount = Math.min(GRAPH_MAX_COLUMNS, nodes.length - rowStart)
+    return {
+      ...node,
+      x: graphColumns[rowCount][column],
+      y: 22 + row * 44,
+    }
+  }), [nodes])
+
+  const positionedById = useMemo(
+    () => new Map(positioned.map((node) => [node.id, node])),
+    [positioned]
+  )
+  const graphViewBoxHeight = Math.max(106, 42 + (Math.ceil(positioned.length / GRAPH_MAX_COLUMNS) - 1) * 44)
 
   const relatedDocuments = useMemo(() => {
     const normalize = (value: string) => value.toLowerCase().replace(/\.(pdf|csv|txt)$/i, '').replace(/[^a-z0-9]/g, '')
@@ -84,80 +150,177 @@ export function KnowledgeGraphPage() {
   }
 
   return (
-    <div className="page graph-page">
-      <section className="page-heading compact">
-        <div>
-          <h1>Knowledge Graph</h1>
-          <p>{completeness.totalTags} nodes - KG Completeness: {(completeness.score * 100).toFixed(1)}%</p>
-        </div>
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight">Knowledge Graph</h1>
+        <p className="text-sm text-muted-foreground">
+          {completeness.totalTags} nodes - KG Completeness: {(completeness.score * 100).toFixed(1)}%
+        </p>
+      </header>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Equipment relationship graph</CardTitle>
+          </CardHeader>
+          <CardContent className="max-h-[36rem] overflow-auto lg:max-h-[48rem]">
+            <svg className="min-w-[36rem] w-full lg:min-w-0" viewBox={`0 0 150 ${graphViewBoxHeight}`} role="img" aria-label="Equipment relationship graph">
+              {edges.map((edge) => {
+                const source = positionedById.get(edge.source)
+                const target = positionedById.get(edge.target)
+                if (!source || !target) return null
+                return (
+                  <line
+                    key={`${edge.source}-${edge.target}`}
+                    x1={source.x}
+                    y1={source.y}
+                    x2={target.x}
+                    y2={target.y}
+                    className="stroke-border"
+                    strokeWidth={0.6}
+                  />
+                )
+              })}
+              {positioned.map((node) => (
+                <g
+                  key={node.id}
+                  onClick={() => setSelected(node)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setSelected(node)
+                    }
+                  }}
+                  className="cursor-pointer outline-none hover:[&_circle]:stroke-ring hover:[&_circle]:stroke-[1] focus-visible:[&_circle]:stroke-ring focus-visible:[&_circle]:stroke-[1.5]"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Select ${node.label}`}
+                >
+                  <circle
+                    cx={node.x}
+                    cy={node.y}
+                    r={4 + node.score * 0.4}
+                    className={cn('stroke-background transition-colors', graphNodeFill[node.type])}
+                    strokeWidth={selected.id === node.id ? 1.2 : 0.5}
+                  />
+                  <text
+                    x={node.x}
+                    y={node.y + 11}
+                    textAnchor="middle"
+                    className="pointer-events-none fill-foreground"
+                    fontSize={3.25}
+                  >
+                    {graphLabelLines(node.label).map((line, lineIndex) => (
+                      <tspan key={line} x={node.x} dy={lineIndex === 0 ? 0 : 4}>
+                        {line}
+                      </tspan>
+                    ))}
+                  </text>
+                </g>
+              ))}
+            </svg>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{selected.label}</CardTitle>
+            <CardAction>
+              <Badge variant="secondary">{selected.type}</Badge>
+            </CardAction>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <Table aria-label={`${selected.label} details`}>
+              <TableBody>
+                {Object.entries(selected.details).map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableCell className="capitalize text-muted-foreground">{key}</TableCell>
+                    <TableCell className="whitespace-normal text-right font-medium">{value}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            <Separator />
+
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Related documents</span>
+              {relatedDocuments.length ? relatedDocuments.map((doc) => (
+                <Button
+                  key={doc.id}
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="h-auto min-h-12 w-full justify-start whitespace-normal text-left"
+                  onClick={() => openDocumentContext(doc.id)}
+                >
+                  <span className="flex min-w-0 flex-col gap-1">
+                    <strong className="truncate font-medium">{doc.filename}</strong>
+                    <span className="text-xs text-muted-foreground">
+                      {doc.docType}{doc.chunks ? ` - ${doc.chunks} chunks` : ''}
+                    </span>
+                  </span>
+                </Button>
+              )) : (
+                <Empty className="border">
+                  <EmptyHeader>
+                    <EmptyTitle>No directly linked documents for this node.</EmptyTitle>
+                  </EmptyHeader>
+                </Empty>
+              )}
+            </div>
+
+            <Button type="button" onClick={resolvePath} disabled={pathLoading}>
+              {pathLoading
+                ? <LoaderCircle data-icon="inline-start" className="animate-spin" aria-hidden="true" />
+                : <Route data-icon="inline-start" aria-hidden="true" />}
+              {selected.type === 'Regulation' ? 'Find evidence documents' : 'Shortest path to regulation'}
+            </Button>
+
+            <div className="flex flex-col gap-2" aria-live="polite">
+              <Alert>
+                <Route aria-hidden="true" />
+                <AlertDescription>{pathStatus}</AlertDescription>
+              </Alert>
+              {pathRecords.map((record) => {
+                const path = Array.isArray(record.path) ? record.path : []
+                const relationships = Array.isArray(record.relationships) ? record.relationships : []
+                return (
+                  <Alert key={`${record.source}-${record.target}-${record.depth}`}>
+                    <Route aria-hidden="true" />
+                    <AlertTitle>
+                      {path.length ? path.map((node) => node.label).join(' -> ') : `${selected.label} -> ${record.target}`}
+                    </AlertTitle>
+                    <AlertDescription>
+                      {relationships.length ? relationships.join(' -> ') : 'RELATED'} | {record.depth} hop{record.depth === 1 ? '' : 's'}
+                    </AlertDescription>
+                  </Alert>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </section>
-      <section className="graph-layout">
-        <div className="panel graph-canvas">
-          <svg viewBox="0 0 150 96" role="img" aria-label="Equipment relationship graph">
-            {edges.map((edge) => {
-              const source = positioned.find((node) => node.id === edge.source)
-              const target = positioned.find((node) => node.id === edge.target)
-              if (!source || !target) return null
-              return <line key={`${edge.source}-${edge.target}`} x1={source.x} y1={source.y} x2={target.x} y2={target.y} />
-            })}
-            {positioned.map((node) => (
-              <g key={node.id} onClick={() => setSelected(node)} className={`node node-${node.type.toLowerCase()}`} tabIndex={0}>
-                <circle cx={node.x} cy={node.y} r={4 + node.score * 0.4} />
-                <text x={node.x + 7} y={node.y + 1}>{node.label}</text>
-              </g>
-            ))}
-          </svg>
-        </div>
-        <aside className="panel detail-panel">
-          <p>{selected.type}</p>
-          <h2>{selected.label}</h2>
-          {Object.entries(selected.details).map(([key, value]) => (
-            <div key={key} className="detail-row"><span>{key}</span><strong>{value}</strong></div>
-          ))}
-          <div className="related-documents">
-            <span>Related documents</span>
-            {relatedDocuments.length ? relatedDocuments.map((doc) => (
-              <button key={doc.id} type="button" onClick={() => openDocumentContext(doc.id)}>
-                <strong>{doc.filename}</strong>
-                <small>{doc.docType}{doc.chunks ? ` - ${doc.chunks} chunks` : ''}</small>
-              </button>
-            )) : <small>No directly linked documents for this node.</small>}
+
+      <Card>
+        <CardHeader>
+          <CardDescription>Scale-up Simulator</CardDescription>
+          <CardTitle>ChromaDB to Pinecone, AuraDB Free to Enterprise</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[220px] min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={scaleData}>
+                <XAxis dataKey="corpus" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={chartTooltipStyle} />
+                <Line dataKey="latency" stroke="var(--chart-2)" strokeWidth={2} dot />
+                <Line dataKey="accuracy" stroke="var(--chart-4)" strokeWidth={2} dot />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <button type="button" onClick={resolvePath} disabled={pathLoading}>
-            {selected.type === 'Regulation' ? 'Find evidence documents' : 'Shortest path to regulation'}
-          </button>
-          <div className="graph-path-results" aria-live="polite">
-            <span>{pathStatus}</span>
-            {pathRecords.map((record) => {
-              const path = Array.isArray(record.path) ? record.path : []
-              const relationships = Array.isArray(record.relationships) ? record.relationships : []
-              return (
-                <article key={`${record.source}-${record.target}-${record.depth}`}>
-                  <strong>{path.length ? path.map((node) => node.label).join(' -> ') : `${selected.label} -> ${record.target}`}</strong>
-                  <small>{relationships.length ? relationships.join(' -> ') : 'RELATED'} | {record.depth} hop{record.depth === 1 ? '' : 's'}</small>
-                </article>
-              )
-            })}
-          </div>
-        </aside>
-      </section>
-      <section className="panel scale-panel">
-        <div className="panel-header">
-          <div>
-            <p>Scale-up Simulator</p>
-            <h2>ChromaDB to Pinecone, AuraDB Free to Enterprise</h2>
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={scaleData}>
-            <XAxis dataKey="corpus" stroke="#748093" tickLine={false} axisLine={false} />
-            <YAxis stroke="#748093" tickLine={false} axisLine={false} />
-            <Tooltip contentStyle={{ background: '#101722', border: '1px solid #263244', borderRadius: 8 }} />
-            <Line dataKey="latency" stroke="#22d3ee" strokeWidth={2} dot />
-            <Line dataKey="accuracy" stroke="#f59e0b" strokeWidth={2} dot />
-          </LineChart>
-        </ResponsiveContainer>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   )
 }

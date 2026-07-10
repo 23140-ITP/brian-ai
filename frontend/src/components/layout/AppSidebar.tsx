@@ -1,0 +1,133 @@
+import { BrainCircuit, ChevronsUpDown, CircleUserRound, LogOut, Settings } from 'lucide-react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  useSidebar,
+} from '@/components/ui/sidebar'
+import { navigationSections } from './navigation'
+
+export function AppSidebar() {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { setOpenMobile } = useSidebar()
+
+  const closeMobileSidebar = () => setOpenMobile(false)
+
+  return (
+    <Sidebar variant="inset" collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild tooltip="Brian AI">
+              <NavLink to="/" onClick={closeMobileSidebar}>
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <BrainCircuit />
+                </span>
+                <span className="grid min-w-0 flex-1 text-left leading-tight">
+                  <span className="truncate font-semibold">Brian AI</span>
+                  <span className="truncate text-xs text-muted-foreground">Bharat Refinery</span>
+                </span>
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        {navigationSections.map((section) => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map(({ to, label, icon: Icon }) => (
+                  <SidebarMenuItem key={to}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === to}
+                      tooltip={label}
+                    >
+                      <NavLink to={to} end={to === '/'} onClick={closeMobileSidebar}>
+                        <Icon />
+                        <span>{label}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
+                  <Avatar size="sm">
+                    <AvatarFallback>BR</AvatarFallback>
+                  </Avatar>
+                  <span className="grid min-w-0 flex-1 text-left leading-tight">
+                    <span className="truncate font-medium">Bharat Refinery</span>
+                    <span className="truncate text-xs text-muted-foreground">Jamnagar</span>
+                  </span>
+                  <ChevronsUpDown className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" align="end" className="w-56">
+                <DropdownMenuLabel>Workspace</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      closeMobileSidebar()
+                      navigate('/settings')
+                    }}
+                  >
+                    <Settings />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      closeMobileSidebar()
+                      navigate('/field')
+                    }}
+                  >
+                    <CircleUserRound />
+                    Field Mode
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem disabled>
+                    <LogOut />
+                    Local demo session
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  )
+}
