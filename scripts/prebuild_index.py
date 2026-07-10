@@ -8,30 +8,32 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = Path(os.getenv("BRIAN_AI_DATA_DIR", ROOT / "data"))
 CORPUS = DATA_DIR / "corpus"
-INDEX = DATA_DIR / "chroma_index"
+INDEX = DATA_DIR / "vector_index"
 sys.path.insert(0, str(ROOT / "backend"))
 sys.path.insert(0, str(ROOT))
 
 from graph_builder import build_graph  # noqa: E402
-from ingestion.embedding_cache import cache_stats  # noqa: E402
-from ingestion.pipeline import ingest_path  # noqa: E402
+from corpus_search import read_text, split_chunks  # noqa: E402
 from pattern_detector import detect_alerts  # noqa: E402
+from vector_store import index_chunks, vector_stats  # noqa: E402
 
 
 def main() -> None:
     INDEX.mkdir(parents=True, exist_ok=True)
     files = sorted(path for path in CORPUS.glob("*") if path.is_file())
-    ingested = [ingest_path(path) for path in files]
+    chunks = [chunk for path in files for chunk in split_chunks(path.name, read_text(path))]
+    index_result = index_chunks(chunks)
     nodes, edges = build_graph()
     alerts = detect_alerts()
-    stats = cache_stats()
+    stats = vector_stats()
     manifest = {
-        "engine": "sqlite-cached-local-index",
-        "note": "Credential-free hackathon seed index. Chunks are cached in data/cache.db by SHA-256 and can be replaced by ChromaDB embeddings without changing API contracts.",
+        "engine": "openrouter-sqlite-vector" if stats["chunks"] else "lexical-fallback",
+        "embedding_model": stats["model"],
         "source_files": [path.name for path in files],
         "documents": len(files),
-        "chunks": sum(row["chunks"] for row in ingested),
-        "embedding_cache_chunks": stats["chunks"],
+        "chunks": len(chunks),
+        "vector_chunks": stats["chunks"],
+        "vectors_indexed": index_result["indexed"],
         "entities": len(nodes),
         "edges": len(edges),
         "alerts": len(alerts),

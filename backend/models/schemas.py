@@ -1,10 +1,14 @@
 from typing import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class QueryRequest(BaseModel):
-    query: str
-    model: str = "openai/gpt-4o-mini"
+    query: str = Field(min_length=1, max_length=2000)
+    model: Literal[
+        "openai/gpt-4o-mini",
+        "anthropic/claude-3.5-sonnet",
+        "google/gemini-flash-1.5",
+    ] = "openai/gpt-4o-mini"
     scope: Literal["rag", "compliance", "benchmark"] = "rag"
 
 
@@ -47,8 +51,13 @@ class OCRResult(BaseModel):
     provider: str = "local-ocr-fallback"
 
 
+class KnowledgeCaptureAnswer(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+    answer: str = Field(max_length=5000)
+
+
 class KnowledgeCaptureRequest(BaseModel):
-    session_id: str
-    expert_name: str
-    topic: str
-    answers: list[dict]
+    session_id: str = Field(min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9_-]+$")
+    expert_name: str = Field(min_length=1, max_length=100)
+    topic: str = Field(min_length=1, max_length=200)
+    answers: list[KnowledgeCaptureAnswer] = Field(min_length=1, max_length=10)

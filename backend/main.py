@@ -10,18 +10,18 @@ from benchmark import load_benchmark_results, spot_check, stream_benchmark_event
 from compliance.checker import compliance_events
 from config import get_settings
 from database import close_driver, create_schema, neo4j_keepalive_enabled, neo4j_keepalive_loop
-from ingestion.document_classifier import classify_document
-from ingestion.embedding_cache import cache_stats
+from corpus_catalog import list_documents, register_document
 from ingestion.pipeline import save_and_ingest, stream_save_and_ingest
 from knowledge_capture import capture_questions as get_capture_questions
 from knowledge_capture import ingest_expert_knowledge
-from knowledge_graph.service import completeness_score, graph_edges, graph_nodes, query_graph
-from mock_data import COMPLIANCE_RESULTS, DOCUMENTS
+from knowledge_graph.service import completeness_score, graph_edges, graph_nodes, query_graph, refresh_graph_store
+from mock_data import COMPLIANCE_RESULTS
 from models.schemas import KnowledgeCaptureRequest, OCRResult, QueryRequest, QueryResponse
 from ocr.nameplate import extract_tag_from_upload
 from pattern_detector import detect_alerts
 from rag.agent import run_query
 from rag.streaming import stream_query_events
+from request_guard import enforce_rate_limit, read_limited_upload, require_write_access
 from system_status import provider_status
 
 settings = get_settings()
@@ -32,6 +32,7 @@ async def lifespan(_: FastAPI):
     keepalive_task: asyncio.Task | None = None
     if neo4j_keepalive_enabled():
         await create_schema()
+        await refresh_graph_store()
         keepalive_task = asyncio.create_task(neo4j_keepalive_loop())
     try:
         yield
@@ -53,22 +54,9 @@ app.add_middleware(
 )
 
 
-def register_document(response: dict) -> None:
-    if not any(document["filename"] == response["doc_id"] for document in DOCUMENTS):
-        DOCUMENTS.append(
-            {
-                "id": response["doc_id"].lower().replace(".", "-"),
-                "filename": response["doc_id"],
-                "docType": response.get("doc_type") or classify_document(response["doc_id"]),
-                "chunks": response["chunks"],
-                "ingestedAt": response["ingested_at"][:10],
-            }
-        )
-
-
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "ok", "version": "1.0.0", "corpus_docs": len(DOCUMENTS), "cache": cache_stats()}
+    return {"status": "ok", "version": "1.0.0", "corpus_docs": len(list_documents())}
 
 
 @app.get("/api/system/status")
@@ -83,7 +71,7 @@ async def get_alerts() -> list[dict]:
 
 @app.get("/api/documents")
 async def get_documents() -> list[dict]:
-    return DOCUMENTS
+    return list_documents()
 
 
 @app.get("/api/compliance/results")
@@ -98,17 +86,17 @@ async def compliance_check() -> StreamingResponse:
 
 @app.get("/api/graph/nodes")
 async def get_graph_nodes() -> list[dict]:
-    return graph_nodes()
+    return await graph_nodes()
 
 
 @app.get("/api/graph/edges")
 async def get_graph_edges() -> list[dict]:
-    return graph_edges()
+    return await graph_edges()
 
 
 @app.get("/api/graph/completeness")
 async def get_graph_completeness() -> dict:
-    return completeness_score()
+    return await completeness_score()
 
 
 @app.post("/api/graph/query")
@@ -119,7 +107,7 @@ async def graph_query(payload: dict) -> dict:
         "query": payload.get("cypher", ""),
         "source": source,
         "targetType": target_type,
-        "records": query_graph(source, target_type),
+        "records": await query_graph(source, target_type),
     }
 
 
@@ -131,46 +119,53 @@ async def get_benchmark(request: Request):
 
 
 @app.post("/api/benchmark/spot-check/{index}")
-async def benchmark_spot_check(index: int) -> dict:
-    return spot_check(index)
+async def benchmark_spot_check(index: int, request: Request) -> dict:
+    enforce_rate_limit(request, "query", get_settings().query_rate_limit)
+    return await asyncio.to_thread(spot_check, index)
 
 
 @app.post("/api/query", response_model=QueryResponse)
-async def query(request: QueryRequest) -> QueryResponse:
-    result = run_query(request.query, model=request.model, scope=request.scope)
+async def query(payload: QueryRequest, request: Request) -> QueryResponse:
+    enforce_rate_limit(request, "query", get_settings().query_rate_limit)
+    result = await asyncio.to_thread(run_query, payload.query, payload.model, payload.scope)
     return QueryResponse(**result)
 
 
 @app.post("/api/query/stream")
-async def query_stream(request: QueryRequest) -> StreamingResponse:
+async def query_stream(payload: QueryRequest, request: Request) -> StreamingResponse:
+    enforce_rate_limit(request, "query", get_settings().query_rate_limit)
     return StreamingResponse(
-        stream_query_events(request.query, request.model, request.scope),
+        stream_query_events(payload.query, payload.model, payload.scope),
         media_type="text/event-stream",
     )
 
 
 @app.post("/api/ingest")
 async def ingest(request: Request, file: UploadFile):
+    require_write_access(request)
     filename = file.filename or "uploaded-document.txt"
-    content = await file.read()
+    content = await read_limited_upload(file, get_settings().max_document_bytes, {".pdf", ".csv", ".txt"})
     if "text/event-stream" in request.headers.get("accept", ""):
         async def events():
             async for payload in stream_save_and_ingest(filename, content):
                 if payload["event"] == "done":
                     register_document(payload["data"])
+                    await refresh_graph_store()
                 yield f"event: {payload['event']}\ndata: {json.dumps(payload['data'])}\n\n"
 
         return StreamingResponse(events(), media_type="text/event-stream")
 
-    response = save_and_ingest(filename, content)
+    response = await asyncio.to_thread(save_and_ingest, filename, content)
     register_document(response)
+    await refresh_graph_store()
     return response
 
 
 @app.post("/api/ocr/nameplate", response_model=OCRResult)
-async def ocr_nameplate(file: UploadFile) -> OCRResult:
-    content = await file.read()
-    result = extract_tag_from_upload(file.filename or "", content, file.content_type or "image/jpeg")
+async def ocr_nameplate(request: Request, file: UploadFile) -> OCRResult:
+    enforce_rate_limit(request, "ocr", get_settings().query_rate_limit)
+    content = await read_limited_upload(file, get_settings().max_image_bytes, {".jpg", ".jpeg", ".png", ".webp"})
+    result = await asyncio.to_thread(extract_tag_from_upload, file.filename or "", content, file.content_type or "image/jpeg")
     return OCRResult(**result)
 
 
@@ -180,12 +175,15 @@ async def capture_questions() -> list[str]:
 
 
 @app.post("/api/capture")
-async def capture(payload: KnowledgeCaptureRequest) -> dict:
-    response = ingest_expert_knowledge(
+async def capture(payload: KnowledgeCaptureRequest, request: Request) -> dict:
+    require_write_access(request)
+    response = await asyncio.to_thread(
+        ingest_expert_knowledge,
         payload.session_id,
         payload.expert_name,
         payload.topic,
-        payload.answers,
+        [answer.model_dump() for answer in payload.answers],
     )
     register_document(response)
+    await refresh_graph_store()
     return response
