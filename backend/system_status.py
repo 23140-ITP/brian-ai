@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from config import get_settings
 from database import neo4j_status
-from ingestion.embedding_cache import cache_stats
 from llm.openrouter import is_configured as openrouter_configured
 from ocr.nameplate import ocr_status
+from vector_store import vector_stats
 
 
 def _check(status_id: str, label: str, status: str, detail: str) -> dict:
@@ -17,10 +17,11 @@ def _public_cors_ready(origins: list[str]) -> bool:
     return all(origin != "*" and origin.startswith("https://") for origin in origins)
 
 
-def _readiness(settings, graph: dict, ocr: dict, rag_configured: bool) -> dict:
+def _readiness(settings, graph: dict, ocr: dict, rag_configured: bool, vectors: dict) -> dict:
     cors_ready = _public_cors_ready(settings.cors_origins)
     public_links_ready = bool(settings.frontend_public_url and settings.backend_public_url)
-    persistent_index_ready = settings.chroma_path.replace("\\", "/").startswith("/data/")
+    vector_ready = rag_configured and vectors["chunks"] > 0
+    write_access_ready = bool(settings.write_token) if settings.environment.lower() == "production" else True
 
     checks = [
         _check(
@@ -42,10 +43,10 @@ def _readiness(settings, graph: dict, ocr: dict, rag_configured: bool) -> dict:
         _check(
             "neo4j",
             "Neo4j AuraDB graph",
-            "ready" if graph.get("keepAliveEnabled") else "missing" if graph.get("configured") else "local",
-            "AuraDB credentials and Python driver are available for keep-alive."
-            if graph.get("keepAliveEnabled")
-            else "Neo4j credentials are present but the production driver path is not active."
+            "ready" if graph.get("adapterActive") else "missing" if graph.get("configured") else "local",
+            "Neo4j is storing and serving the Brian AI graph."
+            if graph.get("adapterActive")
+            else f"Neo4j is configured but graph sync is inactive ({graph.get('lastError') or 'not synced'})."
             if graph.get("configured")
             else "Local corpus graph is active; add AuraDB credentials for live graph storage.",
         ),
@@ -58,12 +59,20 @@ def _readiness(settings, graph: dict, ocr: dict, rag_configured: bool) -> dict:
             else "Set ALLOW_ORIGINS to the deployed Vercel URL before public submission.",
         ),
         _check(
-            "persistent-index",
-            "Persistent index volume",
-            "ready" if persistent_index_ready else "local",
-            "CHROMA_PATH points at the Railway /data volume."
-            if persistent_index_ready
-            else "Point CHROMA_PATH at a persistent deployment volume before live indexing.",
+            "vector-index",
+            "Vector retrieval",
+            "ready" if vector_ready else "local",
+            f"{vectors['chunks']} chunks are indexed with {vectors['model']}."
+            if vector_ready
+            else "Lexical retrieval is active until OpenRouter embeddings are configured and indexed.",
+        ),
+        _check(
+            "write-access",
+            "Protected write access",
+            "ready" if write_access_ready else "missing",
+            "Production ingestion requires a server-side write token."
+            if write_access_ready
+            else "Set BRIAN_AI_WRITE_TOKEN before exposing ingestion and knowledge capture.",
         ),
         _check(
             "public-links",
@@ -85,6 +94,7 @@ def provider_status() -> dict:
     rag_configured = openrouter_configured()
     graph = neo4j_status()
     ocr = ocr_status()
+    vectors = vector_stats()
     return {
         "api": "ok",
         "rag": {
@@ -94,9 +104,9 @@ def provider_status() -> dict:
         },
         "graph": graph,
         "index": {
-            "mode": "sqlite-cache-seed",
-            "chromaPath": settings.chroma_path,
-            "cache": cache_stats(),
+            "mode": "openrouter-sqlite-vector" if rag_configured and vectors["chunks"] else "lexical-fallback",
+            "vectorPath": vectors["path"],
+            "cache": vectors,
         },
         "ocr": ocr,
         "deployment": {
@@ -105,5 +115,5 @@ def provider_status() -> dict:
             "frontendPublicUrl": settings.frontend_public_url,
             "backendPublicUrl": settings.backend_public_url,
         },
-        "readiness": _readiness(settings, graph, ocr, rag_configured),
+        "readiness": _readiness(settings, graph, ocr, rag_configured, vectors),
     }

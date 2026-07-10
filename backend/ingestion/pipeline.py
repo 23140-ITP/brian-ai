@@ -7,15 +7,15 @@ from pathlib import Path
 
 from corpus_search import CORPUS_DIR, read_text, refresh_corpus, split_chunks
 from ingestion.document_classifier import classify_document
-from ingestion.embedding_cache import get_or_create_embedding
 from ingestion.entity_extractor import extract_entities
 from pattern_detector import detect_alerts
+from vector_store import index_chunks
 
 
 INGEST_STEPS = [
     "Extracting text",
     "Chunking",
-    "Embedding with cache",
+    "Indexing vectors",
     "Extracting entities",
     "Running pattern detection",
 ]
@@ -31,10 +31,7 @@ def save_upload(filename: str, content: bytes) -> Path:
 
 def ingest_text(path: Path, text: str) -> dict:
     chunks = split_chunks(path.name, text)
-    cache_hits = 0
-    for chunk in chunks:
-        _, hit = get_or_create_embedding(chunk.text, path.name)
-        cache_hits += int(hit)
+    vector_result = index_chunks(chunks)
 
     refresh_corpus()
     entities = extract_entities(text)
@@ -45,7 +42,8 @@ def ingest_text(path: Path, text: str) -> dict:
         "chunks": len(chunks),
         "entities": len(entities),
         "alerts_triggered": len(alerts),
-        "cache_hits": cache_hits,
+        "cache_hits": vector_result["cache_hits"],
+        "vectors_indexed": vector_result["indexed"],
         "ingested_at": datetime.utcnow().isoformat() + "Z",
     }
 
@@ -72,11 +70,8 @@ async def stream_save_and_ingest(filename: str, content: bytes):
     yield {"event": "progress", "data": {"current": 2, "total": total, "step": INGEST_STEPS[1], "chunks": len(chunks)}}
     await asyncio.sleep(0.02)
 
-    cache_hits = 0
-    for chunk in chunks:
-        _, hit = get_or_create_embedding(chunk.text, destination.name)
-        cache_hits += int(hit)
-    yield {"event": "progress", "data": {"current": 3, "total": total, "step": INGEST_STEPS[2], "cache_hits": cache_hits}}
+    vector_result = await asyncio.to_thread(index_chunks, chunks)
+    yield {"event": "progress", "data": {"current": 3, "total": total, "step": INGEST_STEPS[2], **vector_result}}
     await asyncio.sleep(0.02)
 
     refresh_corpus()
@@ -93,7 +88,8 @@ async def stream_save_and_ingest(filename: str, content: bytes):
         "chunks": len(chunks),
         "entities": len(entities),
         "alerts_triggered": len(alerts),
-        "cache_hits": cache_hits,
+        "cache_hits": vector_result["cache_hits"],
+        "vectors_indexed": vector_result["indexed"],
         "ingested_at": datetime.utcnow().isoformat() + "Z",
     }
     yield {"event": "done", "data": response}

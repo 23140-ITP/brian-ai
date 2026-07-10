@@ -104,8 +104,8 @@ def search(query: str, limit: int = 5) -> list[Chunk]:
     return [chunk for _, chunk in ranked[:limit]]
 
 
-def answer_query(query: str) -> dict:
-    matches = search(query, limit=4)
+def answer_query(query: str, matches: list[Chunk] | None = None) -> dict:
+    matches = matches if matches is not None else search(query, limit=4)
     if not matches:
         return {
             "answer": "Brian AI could not find strong evidence in the local corpus. Upload the relevant procedure, inspection report, or work order and retry.",

@@ -105,8 +105,12 @@ export function DashboardPage() {
   const prove = async () => {
     setProveIt('Running evidence query...')
     const start = performance.now()
-    const result = await api.ask('What caused the P-204B seal failure?', 'openai/gpt-4o-mini')
-    setProveIt(`${((performance.now() - start) / 1000).toFixed(1)}s: ${result.answer.slice(0, 96)}...`)
+    try {
+      const result = await api.ask('What caused the P-204B seal failure?', 'openai/gpt-4o-mini')
+      setProveIt(`${((performance.now() - start) / 1000).toFixed(1)}s: ${result.answer.slice(0, 96)}...`)
+    } catch {
+      setProveIt('Live backend unavailable. No demo answer was substituted.')
+    }
   }
 
   return (

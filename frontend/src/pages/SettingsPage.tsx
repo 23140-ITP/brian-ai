@@ -9,6 +9,7 @@ import {
   CardTitle
 } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -17,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { api, SystemStatus } from '../services/api'
+import { api, getWriteToken, setWriteToken, SystemStatus } from '../services/api'
 import { useAppStore } from '../store/appStore'
 
 const judgingCriteria = [
@@ -76,6 +77,7 @@ export function SettingsPage() {
   const { model, setModel } = useAppStore()
   const [health, setHealth] = useState('checking')
   const [status, setStatus] = useState<SystemStatus | null>(null)
+  const [writeToken, setWriteTokenValue] = useState(getWriteToken)
 
   useEffect(() => {
     api.health().then((result) => setHealth(result.status))
@@ -118,12 +120,12 @@ export function SettingsPage() {
         <StatusCard
           label="API connection"
           value={health}
-          description="Frontend falls back to local demo data when backend services are unavailable."
+          description="Live failures are disclosed and AI answers are never replaced silently."
         />
         <StatusCard
           label="Architecture"
           value="React + FastAPI"
-          description="Designed for ChromaDB, Neo4j AuraDB, OpenRouter, OCR fallback, and Railway/Vercel deployment."
+          description="SQLite vector retrieval, Neo4j AuraDB, OpenRouter, OCR fallback, and Railway/Vercel deployment."
         />
         <StatusCard
           label="RAG provider"
@@ -135,11 +137,11 @@ export function SettingsPage() {
         <StatusCard
           label="Graph provider"
           value={status?.graph.mode || 'checking'}
-          description={status?.graph.keepAliveEnabled
-            ? `Neo4j AuraDB keep-alive enabled every ${status.graph.heartbeatIntervalMinutes} minutes.`
+          description={status?.graph.adapterActive
+            ? `Neo4j is serving the graph; last sync ${status.graph.lastSyncAt || 'complete'}.`
             : status?.graph.configured
-              ? 'Neo4j credentials are present; install the driver in production to enable AuraDB keep-alive.'
-              : 'Local corpus graph is active; Neo4j credentials can be added without frontend changes.'}
+              ? `Neo4j is configured but graph sync is inactive (${status.graph.lastError || 'not synced'}).`
+              : 'Local corpus graph is active until Neo4j credentials are configured.'}
         />
         <StatusCard
           label="Index cache"
@@ -155,6 +157,28 @@ export function SettingsPage() {
               ? 'Using local Tesseract OCR with deterministic tag fallback.'
               : 'Using deterministic tag extraction until OpenRouter vision is enabled.'}
         />
+        <Card className="min-h-44">
+          <CardHeader>
+            <CardTitle>Write access</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="write-access-token">Operator key</FieldLabel>
+                <Input
+                  id="write-access-token"
+                  type="password"
+                  autoComplete="off"
+                  value={writeToken}
+                  onChange={(event) => {
+                    setWriteTokenValue(event.target.value)
+                    setWriteToken(event.target.value)
+                  }}
+                />
+              </Field>
+            </FieldGroup>
+          </CardContent>
+        </Card>
       </section>
 
       {status?.readiness && (

@@ -305,7 +305,7 @@ export function KnowledgeGraphPage() {
       <Card>
         <CardHeader>
           <CardDescription>Scale-up Simulator</CardDescription>
-          <CardTitle>ChromaDB to Pinecone, AuraDB Free to Enterprise</CardTitle>
+          <CardTitle>SQLite vectors to managed vector search, AuraDB Free to Enterprise</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[220px] min-w-0">

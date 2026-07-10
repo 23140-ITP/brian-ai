@@ -17,11 +17,13 @@ SMOKE_FILENAME = "submission-ingest-smoke.txt"
 
 def cleanup_smoke_artifacts() -> None:
     (ROOT / "data" / "corpus" / SMOKE_FILENAME).unlink(missing_ok=True)
-    cache_path = ROOT / "data" / "cache.db"
-    if cache_path.exists():
-        with sqlite3.connect(cache_path) as connection:
-            connection.execute("DELETE FROM embedding_cache WHERE source_file = ?", (SMOKE_FILENAME,))
+    vector_path = ROOT / "data" / "vectors.db"
+    if vector_path.exists():
+        with sqlite3.connect(vector_path) as connection:
+            connection.execute("DELETE FROM vectors WHERE source_file = ?", (SMOKE_FILENAME,))
             connection.commit()
+    from corpus_catalog import list_documents
+    list_documents()
 
 
 def main() -> None:
@@ -41,7 +43,7 @@ def main() -> None:
         assert status["ocr"]["mode"] in {"local-ocr-fallback", "openrouter-vision"}
         assert status["readiness"]["productionReady"] is False
         readiness_ids = {check["id"] for check in status["readiness"]["checks"]}
-        assert {"openrouter", "vision", "neo4j", "cors", "persistent-index", "public-links"} <= readiness_ids
+        assert {"openrouter", "vision", "neo4j", "cors", "vector-index", "write-access", "public-links"} <= readiness_ids
 
         assert len(client.get("/api/benchmark").json()) == 15
         assert client.get("/api/benchmark", headers={"accept": "text/event-stream"}).text.count("event: result") == 15

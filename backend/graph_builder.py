@@ -3,8 +3,9 @@ from __future__ import annotations
 import re
 from collections import Counter, defaultdict
 
+from corpus_catalog import list_documents
 from corpus_search import load_corpus
-from mock_data import ALERTS, COMPLIANCE_RESULTS, DOCUMENTS
+from mock_data import ALERTS, COMPLIANCE_RESULTS
 
 
 EQUIPMENT_RE = re.compile(r"\b(?:P|HE|V|K|T)-\d+[A-Z]?\b")
@@ -15,7 +16,7 @@ def doc_label(filename: str) -> str:
 
 
 def document_type(filename: str) -> str:
-    for document in DOCUMENTS:
+    for document in list_documents():
         if document["filename"] == filename:
             return document["docType"]
     return "Document"
@@ -45,7 +46,7 @@ def build_graph() -> tuple[list[dict], list[dict]]:
             "details": {"mentions": str(count), "health": "Watchlist" if tag in {"P-204B", "V-301"} else "Normal"},
         }
 
-    for document in DOCUMENTS:
+    for document in list_documents():
         filename = document["filename"]
         nodes[filename] = {
             "id": filename,

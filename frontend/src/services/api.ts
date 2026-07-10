@@ -15,6 +15,29 @@ import {
 } from '../data/mock'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
+export const dataMode: 'live' | 'demo' = import.meta.env.VITE_DATA_MODE === 'demo' || !API_BASE ? 'demo' : 'live'
+export const API_STATUS_EVENT = 'brian-ai-api-status'
+const WRITE_TOKEN_KEY = 'brian-ai-write-token'
+
+function reportFailure(path: string) {
+  if (dataMode === 'live') {
+    window.dispatchEvent(new CustomEvent(API_STATUS_EVENT, { detail: `Live backend request failed: ${path}` }))
+  }
+}
+
+export function getWriteToken() {
+  return sessionStorage.getItem(WRITE_TOKEN_KEY) || ''
+}
+
+export function setWriteToken(token: string) {
+  if (token) sessionStorage.setItem(WRITE_TOKEN_KEY, token)
+  else sessionStorage.removeItem(WRITE_TOKEN_KEY)
+}
+
+function writeHeaders(headers: Record<string, string> = {}) {
+  const token = getWriteToken()
+  return token ? { ...headers, 'X-Brian-Write-Token': token } : headers
+}
 
 export type SystemStatus = {
   api: string
@@ -28,13 +51,16 @@ export type SystemStatus = {
     driverAvailable: boolean
     driverInitialized?: boolean
     keepAliveEnabled?: boolean
+    adapterActive?: boolean
+    lastSyncAt?: string
+    lastError?: string
     heartbeatIntervalMinutes?: number
     mode: string
   }
   index: {
     mode: string
-    chromaPath: string
-    cache: { chunks: number; files: number; path: string }
+    vectorPath: string
+    cache: { chunks: number; files: number; path: string; model: string }
   }
   ocr?: {
     mode: string
@@ -73,6 +99,7 @@ async function getJson<T>(path: string, fallback: T): Promise<T> {
     if (!response.ok) throw new Error(response.statusText)
     return (await response.json()) as T
   } catch {
+    reportFailure(path)
     return fallback
   }
 }
@@ -118,7 +145,7 @@ export const api = {
     api: 'local demo',
     rag: { mode: 'local-lexical-rag', openrouterConfigured: false, modelRouting: 'enabled' },
     graph: { configured: false, driverAvailable: false, driverInitialized: false, keepAliveEnabled: false, heartbeatIntervalMinutes: 60, mode: 'local-corpus-graph' },
-    index: { mode: 'sqlite-cache-seed', chromaPath: '/data/chroma', cache: { chunks: 107, files: 20, path: 'data/cache.db' } },
+    index: { mode: 'lexical-fallback', vectorPath: 'data/vectors.db', cache: { chunks: 0, files: 0, path: 'data/vectors.db', model: 'openai/text-embedding-3-small' } },
     ocr: { mode: 'local-ocr-fallback', visionConfigured: false, tesseractAvailable: false },
     deployment: { environment: 'development', corsOrigins: ['http://localhost:5173'], frontendPublicUrl: '', backendPublicUrl: '' },
     readiness: {
@@ -128,7 +155,8 @@ export const api = {
         { id: 'vision', label: 'Field vision OCR', status: 'local', detail: 'Nameplate OCR falls back to filename, local OCR, byte-pattern, and demo extraction.' },
         { id: 'neo4j', label: 'Neo4j AuraDB graph', status: 'local', detail: 'Local corpus graph is active; add AuraDB credentials for live graph storage.' },
         { id: 'cors', label: 'Public CORS origins', status: 'local', detail: 'Set ALLOW_ORIGINS to the deployed Vercel URL before public submission.' },
-        { id: 'persistent-index', label: 'Persistent index volume', status: 'ready', detail: 'CHROMA_PATH points at the Railway /data volume.' },
+        { id: 'vector-index', label: 'Vector retrieval', status: 'local', detail: 'Lexical retrieval is active until embeddings are indexed.' },
+        { id: 'write-access', label: 'Protected write access', status: 'missing', detail: 'Set BRIAN_AI_WRITE_TOKEN before public ingestion.' },
         { id: 'public-links', label: 'Public app links', status: 'manual', detail: 'Deploy to Vercel/Railway and set FRONTEND_PUBLIC_URL and BACKEND_PUBLIC_URL.' }
       ]
     }
@@ -163,6 +191,8 @@ export const api = {
         }
       }
     } catch {
+      reportFailure('/api/compliance/check')
+      if (dataMode === 'live') throw new Error('Live compliance check unavailable')
       complianceRows.forEach((row, index) => {
         onProgress(index + 1, complianceRows.length)
         onClause(row)
@@ -172,7 +202,7 @@ export const api = {
   ingestDocument: async (file: File, onProgress?: (progress: IngestProgress) => void) => {
     const body = new FormData()
     body.append('file', file)
-    const response = await fetch(`${API_BASE}/api/ingest`, { method: 'POST', headers: { Accept: 'text/event-stream' }, body })
+    const response = await fetch(`${API_BASE}/api/ingest`, { method: 'POST', headers: writeHeaders({ Accept: 'text/event-stream' }), body })
     if (!response.ok) throw new Error(response.statusText)
     const contentType = response.headers.get('content-type') || ''
     if (!response.body || !contentType.includes('text/event-stream')) return (await response.json()) as IngestResult
@@ -219,7 +249,7 @@ export const api = {
   captureExpertKnowledge: async (payload: { session_id: string; expert_name: string; topic: string; answers: Array<{ question: string; answer: string }> }) => {
     const response = await fetch(`${API_BASE}/api/capture`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: writeHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(payload)
     })
     if (!response.ok) throw new Error(response.statusText)
@@ -271,6 +301,8 @@ export const api = {
       if (!response.ok) throw new Error(response.statusText)
       return (await response.json()) as { answer: string; citations: string[]; confidence: number }
     } catch {
+      reportFailure('/api/query')
+      if (dataMode === 'live') throw new Error('Live backend unavailable; no demo answer was substituted.')
       return {
         answer: answerTemplates[key],
         citations: key === 'oisd'
@@ -324,6 +356,11 @@ export const api = {
       }
       onDone({ citations, confidence })
     } catch {
+      reportFailure('/api/query/stream')
+      if (dataMode === 'live') {
+        onError?.('ERR_BACKEND_UNAVAILABLE')
+        return
+      }
       const fallback = await api.ask(query, model)
       onToken(fallback.answer)
       onDone({ citations: fallback.citations, confidence: fallback.confidence })
