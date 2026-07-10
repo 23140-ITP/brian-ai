@@ -26,7 +26,7 @@ import { DocumentMeta, documents } from '../data/mock'
 import { api } from '../services/api'
 import { useAppStore } from '../store/appStore'
 
-const ingestSteps = ['Extracting text', 'Chunking', 'Embedding with cache', 'Extracting entities', 'Running pattern detection']
+const ingestSteps = ['Extracting text', 'Chunking', 'Indexing vectors', 'Extracting entities', 'Running pattern detection']
 type IngestStatus = 'idle' | 'progress' | 'success' | 'error'
 
 export function DocumentsPage() {
@@ -62,9 +62,9 @@ export function DocumentsPage() {
       setIngestStatus('success')
       setMessage(`Ingested ${result.doc_id}: ${result.chunks} chunks, ${result.entities} entities, ${result.alerts_triggered} alert.`)
       setLibrary(await api.documents())
-    } catch {
+    } catch (error) {
       setIngestStatus('error')
-      setMessage('Backend ingest is unavailable. The visible demo corpus remains loaded.')
+      setMessage(error instanceof Error ? error.message : 'Backend ingest is unavailable. Check the operator key and retry.')
     } finally {
       ingestInFlight.current = false
       event.target.value = ''

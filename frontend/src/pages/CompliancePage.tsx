@@ -66,7 +66,7 @@ export function CompliancePage() {
         setRows(updated)
         setSelected((current) => current?.clauseId === row.clauseId ? row : current)
       }
-    ).finally(() => setRunning(false))
+    ).catch(() => undefined).finally(() => setRunning(false))
   }
 
   const askCopilot = (row: ComplianceRow) => {

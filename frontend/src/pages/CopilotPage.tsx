@@ -88,6 +88,11 @@ export function CopilotPage() {
       },
       (error) => {
         if (error !== 'ERR_EMPTY_KB') {
+          setMessages((rows) => rows.map((message) => (
+            message.id === assistantId
+              ? { ...message, content: 'Live backend unavailable. Brian AI did not substitute a demo answer.' }
+              : message
+          )))
           setLoading(false)
           setStreamStatus('idle')
           return

@@ -22,6 +22,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useAppStore } from '@/store/appStore'
+import { dataMode } from '@/services/api'
 import { getNavigationItem } from './navigation'
 import { SearchCommand } from './SearchCommand'
 import { ThemeToggle } from './ThemeToggle'
@@ -50,7 +51,7 @@ export function AppHeader() {
         <SearchCommand />
         <Badge variant="outline" className="hidden gap-1.5 lg:inline-flex">
           <CircleCheck data-icon="inline-start" />
-          Live demo
+          {dataMode === 'live' ? 'Live backend' : 'Demo data'}
         </Badge>
         <Select value={model} onValueChange={setModel}>
           <SelectTrigger className="hidden min-w-36 sm:flex" aria-label="Select AI model">
