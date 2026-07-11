@@ -1,0 +1,2677 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "results": [
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-dashboard-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Brian AI Command Center"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 20,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Dashboard",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "AI Copilot",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Knowledge Graph",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Compliance",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Documents",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Expert Capture",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Settings",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Field Mode",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 16,
+            "height": 1000,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows\nCtrl K",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Prove It",
+            "width": 72,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Benchmark Mode",
+            "width": 137,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open evidence",
+            "width": 111,
+            "height": 28,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/alerts",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/alerts",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-dashboard-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Brian AI Command Center"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 8,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Prove It",
+            "width": 72,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Benchmark Mode",
+            "width": 137,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open evidence",
+            "width": 111,
+            "height": 28,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/alerts",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/alerts",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/benchmark",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/copilot",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-copilot-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/copilot",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "AI Copilot"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 39,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Dashboard",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "AI Copilot",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Knowledge Graph",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Compliance",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Documents",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Expert Capture",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Settings",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Field Mode",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 16,
+            "height": 1000,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows\nCtrl K",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Send query",
+            "width": 32,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/copilot",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-copilot-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/copilot",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "AI Copilot"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 27,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Send query",
+            "width": 32,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/knowledge-graph",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-knowledge-graph-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/knowledge-graph",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Knowledge Graph"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 26,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Dashboard",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "AI Copilot",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Knowledge Graph",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Compliance",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Documents",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Expert Capture",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Settings",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Field Mode",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 16,
+            "height": 1000,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows\nCtrl K",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Shortest path to regulation",
+            "width": 320,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/graph/nodes",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/nodes",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/edges",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/edges",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/knowledge-graph",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-knowledge-graph-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/knowledge-graph",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Knowledge Graph"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 14,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "g",
+            "name": "Select A. Rao",
+            "width": 38,
+            "height": 65,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Shortest path to regulation",
+            "width": 326,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/graph/nodes",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/nodes",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/completeness",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/edges",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/graph/edges",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/compliance",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-compliance-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/compliance",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "OISD/PESO Compliance Matrix"
+          },
+          {
+            "tag": "H2",
+            "text": "Clause register"
+          },
+          {
+            "tag": "H2",
+            "text": "Fired Heater - Fuel System"
+          },
+          {
+            "tag": "H3",
+            "text": "Clause Quote"
+          },
+          {
+            "tag": "H3",
+            "text": "Plant Evidence"
+          },
+          {
+            "tag": "H3",
+            "text": "Remediation"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 19,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Dashboard",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "AI Copilot",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Knowledge Graph",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Compliance",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Documents",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Expert Capture",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Settings",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Field Mode",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 16,
+            "height": 1000,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows\nCtrl K",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Run Compliance Check",
+            "width": 195,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Ask Copilot",
+            "width": 118,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/compliance",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-compliance-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/compliance",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "OISD/PESO Compliance Matrix"
+          },
+          {
+            "tag": "H2",
+            "text": "Clause register"
+          },
+          {
+            "tag": "H2",
+            "text": "Fired Heater - Fuel System"
+          },
+          {
+            "tag": "H3",
+            "text": "Clause Quote"
+          },
+          {
+            "tag": "H3",
+            "text": "Plant Evidence"
+          },
+          {
+            "tag": "H3",
+            "text": "Remediation"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 25,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Run Compliance Check",
+            "width": 358,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Ask Copilot",
+            "width": 118,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/compliance/results",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/documents",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-documents-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/documents",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Document Intelligence"
+          },
+          {
+            "tag": "H2",
+            "text": "Ingest a document"
+          },
+          {
+            "tag": "H2",
+            "text": "Document library"
+          },
+          {
+            "tag": "H3",
+            "text": "PID-CDU-001.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PID-VDU-002.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PID-FCU-003.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "OISD-116-Fired-Heater-Procedure.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "OISD-117-LPG-Handling.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PESO-Tank-Inspection-SOP.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Emergency-Response-Plan.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "work-orders-2022-2024.csv"
+          },
+          {
+            "tag": "H3",
+            "text": "NDT-Report-HE101-2024.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Tank-T201-Annual-Inspection-2023.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Pump-P204-Vibration-Analysis-2024.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Pressure-Vessel-V301-PV-Report-2023.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Flowserve-Pump-P204-Manual.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Alfa-Laval-HE101-Manual.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Compressor-K101-Manual.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Incident-2023-07-15-P204B-Seal-Failure.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Incident-2022-11-03-HE101-Tube-Leak.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Incident-2024-02-28-V301-Safety-Valve-Lift.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PESO-License-Renewal-2024.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Factory-Act-Annual-Return-2023.pdf"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 38,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Dashboard",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "AI Copilot",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Knowledge Graph",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Compliance",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Documents",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Expert Capture",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Settings",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Field Mode",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 16,
+            "height": 1000,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows\nCtrl K",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/documents",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-documents-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/documents",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Document Intelligence"
+          },
+          {
+            "tag": "H2",
+            "text": "Ingest a document"
+          },
+          {
+            "tag": "H2",
+            "text": "Document library"
+          },
+          {
+            "tag": "H3",
+            "text": "PID-CDU-001.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PID-VDU-002.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PID-FCU-003.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "OISD-116-Fired-Heater-Procedure.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "OISD-117-LPG-Handling.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PESO-Tank-Inspection-SOP.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Emergency-Response-Plan.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "work-orders-2022-2024.csv"
+          },
+          {
+            "tag": "H3",
+            "text": "NDT-Report-HE101-2024.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Tank-T201-Annual-Inspection-2023.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Pump-P204-Vibration-Analysis-2024.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Pressure-Vessel-V301-PV-Report-2023.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Flowserve-Pump-P204-Manual.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Alfa-Laval-HE101-Manual.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Compressor-K101-Manual.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Incident-2023-07-15-P204B-Seal-Failure.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Incident-2022-11-03-HE101-Tube-Leak.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Incident-2024-02-28-V301-Safety-Valve-Lift.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "PESO-License-Renewal-2024.pdf"
+          },
+          {
+            "tag": "H3",
+            "text": "Factory-Act-Annual-Return-2023.pdf"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 26,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/documents",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/capture",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-capture-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/capture",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Expert Knowledge Capture"
+          },
+          {
+            "tag": "H2",
+            "text": "Interview setup"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 20,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Dashboard",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "AI Copilot",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Knowledge Graph",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Compliance",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Documents",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Expert Capture",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Settings",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Field Mode",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 16,
+            "height": 1000,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows\nCtrl K",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "Expert name",
+            "width": 736,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "Topic or equipment area",
+            "width": 736,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Begin Interview",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/capture/questions",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/capture/questions",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/capture",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-capture-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/capture",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Expert Knowledge Capture"
+          },
+          {
+            "tag": "H2",
+            "text": "Interview setup"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 8,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "Expert name",
+            "width": 326,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "Topic or equipment area",
+            "width": 326,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Begin Interview",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/capture/questions",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/capture/questions",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/settings",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-settings-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/settings",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Settings"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 19,
+        "unlabeledInteractive": [
+          {
+            "tag": "input",
+            "name": "",
+            "width": 333,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Dashboard",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "AI Copilot",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Knowledge Graph",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Compliance",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Documents",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Expert Capture",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Settings",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "a",
+            "name": "Field Mode",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 16,
+            "height": 1000,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows\nCtrl K",
+            "width": 224,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 144,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 333,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "width": 333,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/system/status",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/system/status",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/settings",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-settings-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/settings",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H2",
+            "text": "Navigate Brian AI"
+          },
+          {
+            "tag": "H1",
+            "text": "Settings"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 7,
+        "unlabeledInteractive": [
+          {
+            "tag": "input",
+            "name": "",
+            "width": 326,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Skip to content",
+            "width": 24,
+            "height": 16,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle Sidebar",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Search workflows",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Change color theme",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Open workspace menu",
+            "width": 28,
+            "height": 28,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Select AI model",
+            "width": 326,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "width": 326,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:5173/api/system/status",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:5173/api/system/status",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "route": "/field",
+      "viewport": "desktop",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-field-desktop.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/field",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H1",
+            "text": "Brian AI Field - P-204B"
+          }
+        ],
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "horizontalOverflow": false,
+        "interactiveCount": 6,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Back to Command Center",
+            "width": 32,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle sunlight mode",
+            "width": 32,
+            "height": 18,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Scan Nameplate",
+            "width": 506,
+            "height": 36,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Voice Query",
+            "width": 506,
+            "height": 36,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "Manual equipment tag",
+            "width": 916,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Lookup",
+            "width": 71,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "route": "/field",
+      "viewport": "mobile",
+      "screenshot": "C:\\Users\\yashd\\Documents\\Brian AI\\frontend\\audit\\ui-audit-2026-07-12\\screenshots\\baseline-field-mobile.png",
+      "inspection": {
+        "title": "Brian AI · Industrial Knowledge Intelligence",
+        "url": "/field",
+        "h1Count": 1,
+        "headings": [
+          {
+            "tag": "H1",
+            "text": "Brian AI Field - P-204B"
+          }
+        ],
+        "bodyWidth": 390,
+        "viewportWidth": 390,
+        "horizontalOverflow": false,
+        "interactiveCount": 6,
+        "unlabeledInteractive": [],
+        "undersizedTouchTargets": [
+          {
+            "tag": "a",
+            "name": "Back to Command Center",
+            "width": 32,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Toggle sunlight mode",
+            "width": 32,
+            "height": 18,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Scan Nameplate",
+            "width": 358,
+            "height": 36,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Voice Query",
+            "width": 358,
+            "height": 36,
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "name": "Manual equipment tag",
+            "width": 250,
+            "height": 32,
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "name": "Lookup",
+            "width": 71,
+            "height": 32,
+            "disabled": false
+          }
+        ],
+        "nativeSelectCount": 0,
+        "dialogCount": 0
+      },
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        }
+      ],
+      "failedRequests": []
+    }
+  ],
+  "interactions": {
+    "searchDialogOpened": true
+  }
+}

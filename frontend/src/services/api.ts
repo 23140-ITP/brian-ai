@@ -94,6 +94,8 @@ export type GraphPathRecord = {
 }
 
 async function getJson<T>(path: string, fallback: T): Promise<T> {
+  if (dataMode === 'demo') return fallback
+
   try {
     const response = await fetch(`${API_BASE}${path}`)
     if (!response.ok) throw new Error(response.statusText)
@@ -105,6 +107,11 @@ async function getJson<T>(path: string, fallback: T): Promise<T> {
 }
 
 async function streamBenchmarkRows(onRows?: (rows: BenchmarkResult[]) => void): Promise<BenchmarkResult[]> {
+  if (dataMode === 'demo') {
+    onRows?.(benchmarkResults)
+    return benchmarkResults
+  }
+
   const response = await fetch(`${API_BASE}/api/benchmark`, { headers: { Accept: 'text/event-stream' } })
   if (!response.ok || !response.body) throw new Error(response.statusText)
 
@@ -168,6 +175,14 @@ export const api = {
     onProgress: (current: number, total: number) => void,
     onClause: (row: ComplianceRow) => void
   ) => {
+    if (dataMode === 'demo') {
+      complianceRows.forEach((row, index) => {
+        onProgress(index + 1, complianceRows.length)
+        onClause(row)
+      })
+      return
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/compliance/check`)
       if (!response.ok || !response.body) throw new Error(response.statusText)
@@ -281,6 +296,8 @@ export const api = {
   }),
   graphCompleteness: () => getJson('/api/graph/completeness', { totalTags: 73, linkedTags: 64, score: 0.877, nodes: 73, edges: 47 }),
   graphPath: async (source: string, targetType: string) => {
+    if (dataMode === 'demo') return { source, targetType, records: [] }
+
     const response = await fetch(`${API_BASE}/api/graph/query`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -292,6 +309,16 @@ export const api = {
   ask: async (query: string, model: string) => {
     const lower = query.toLowerCase()
     const key = lower.includes('p-204') || lower.includes('seal') ? 'p204' : lower.includes('oisd') ? 'oisd' : lower.includes('v-301') ? 'v301' : 'default'
+    if (dataMode === 'demo') {
+      return {
+        answer: answerTemplates[key],
+        citations: key === 'oisd'
+          ? ['OISD-116-Fired-Heater-Procedure.pdf', 'Emergency-Response-Plan.pdf']
+          : ['Incident-2023-07-15-P204B-Seal-Failure.pdf', 'work-orders-2022-2024.csv'],
+        confidence: key === 'default' ? 0.78 : 0.91
+      }
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/query`, {
         method: 'POST',
@@ -319,6 +346,13 @@ export const api = {
     onDone: (result: { citations: string[]; confidence: number }) => void,
     onError?: (error: string) => void
   ) => {
+    if (dataMode === 'demo') {
+      const fallback = await api.ask(query, model)
+      onToken(fallback.answer)
+      onDone({ citations: fallback.citations, confidence: fallback.confidence })
+      return
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/query/stream`, {
         method: 'POST',

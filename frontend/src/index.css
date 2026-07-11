@@ -152,6 +152,12 @@
     @apply m-0 min-h-svh min-w-80 bg-background text-foreground antialiased;
   }
 
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -217,17 +223,50 @@
   [data-slot="button"],
   [data-slot="sidebar-menu-button"],
   [data-slot="sidebar-trigger"],
-  [data-slot="select-trigger"] {
+  [data-slot="select-trigger"],
+  [data-slot="dropdown-menu-trigger"] {
+    min-height: 2.75rem;
+  }
+
+  input:not([type="hidden"]),
+  select,
+  textarea {
     min-height: 2.75rem;
   }
 
   [data-slot="button"][data-size^="icon"],
-  [data-slot="sidebar-trigger"] {
+  [data-slot="sidebar-trigger"],
+  [data-slot="dropdown-menu-trigger"] {
     min-width: 2.75rem;
   }
 }
 
 @media (max-width: 640px) {
+  [data-slot="button"],
+  [data-slot="sidebar-menu-button"],
+  [data-slot="sidebar-trigger"],
+  [data-slot="select-trigger"],
+  [data-slot="dropdown-menu-trigger"] {
+    min-height: 2.75rem;
+  }
+
+  [data-slot="button"][data-size^="icon"],
+  [data-slot="sidebar-trigger"],
+  [data-slot="dropdown-menu-trigger"] {
+    min-width: 2.75rem;
+  }
+
+  input,
+  select,
+  textarea,
+  [data-slot="switch"] {
+    min-height: 2.75rem;
+  }
+
+  [data-slot="switch"] {
+    min-width: 2.75rem;
+  }
+
   input,
   select,
   textarea {

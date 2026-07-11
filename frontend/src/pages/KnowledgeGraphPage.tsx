@@ -196,6 +196,14 @@ export function KnowledgeGraphPage() {
                   role="button"
                   aria-label={`Select ${node.label}`}
                 >
+                  <rect
+                    x={node.x - 10}
+                    y={node.y - 10}
+                    width={20}
+                    height={20}
+                    fill="transparent"
+                    pointerEvents="all"
+                  />
                   <circle
                     cx={node.x}
                     cy={node.y}
