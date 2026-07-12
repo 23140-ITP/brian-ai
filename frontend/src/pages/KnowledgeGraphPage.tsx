@@ -61,12 +61,13 @@ function graphLabelLines(label: string) {
 
 export function KnowledgeGraphPage() {
   const navigate = useNavigate()
-  const { setActiveDocumentId } = useAppStore()
-  const [nodes, setNodes] = useState<GraphNode[]>(fallbackNodes)
-  const [edges, setEdges] = useState<GraphEdge[]>(fallbackEdges)
-  const [documents, setDocuments] = useState<DocumentMeta[]>(fallbackDocuments)
+  const { setActiveDocumentId, workspace } = useAppStore()
+  const demo = workspace === 'demo'
+  const [nodes, setNodes] = useState<GraphNode[]>(demo ? fallbackNodes : [])
+  const [edges, setEdges] = useState<GraphEdge[]>(demo ? fallbackEdges : [])
+  const [documents, setDocuments] = useState<DocumentMeta[]>(demo ? fallbackDocuments : [])
   const [selected, setSelected] = useState<GraphNode>(fallbackNodes[0])
-  const [completeness, setCompleteness] = useState({ totalTags: 73, linkedTags: 64, score: 0.877 })
+  const [completeness, setCompleteness] = useState(demo ? { totalTags: 73, linkedTags: 64, score: 0.877 } : { totalTags: 0, linkedTags: 0, score: 0 })
   const [pathRecords, setPathRecords] = useState<GraphPathRecord[]>([])
   const [pathStatus, setPathStatus] = useState('Select a node, then resolve its nearest regulation or evidence path.')
   const [pathLoading, setPathLoading] = useState(false)
@@ -79,7 +80,7 @@ export function KnowledgeGraphPage() {
     })
     api.graphCompleteness().then(setCompleteness)
     api.documents().then(setDocuments)
-  }, [])
+  }, [workspace])
 
   const positioned = useMemo(() => nodes.map((node, index) => {
     const row = Math.floor(index / GRAPH_MAX_COLUMNS)
@@ -159,7 +160,7 @@ export function KnowledgeGraphPage() {
       </header>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <Card>
+        {nodes.length ? <Card>
           <CardHeader>
             <CardTitle>Equipment relationship graph</CardTitle>
           </CardHeader>
@@ -228,9 +229,14 @@ export function KnowledgeGraphPage() {
               ))}
             </svg>
           </CardContent>
-        </Card>
+        </Card> : (
+          <Card>
+            <CardHeader><CardTitle>No live graph data</CardTitle></CardHeader>
+            <CardContent><p className="text-sm text-muted-foreground">Upload evidence in Document Intelligence to create workspace-isolated nodes and relationships.</p></CardContent>
+          </Card>
+        )}
 
-        <Card>
+        {nodes.length ? <Card>
           <CardHeader>
             <CardTitle>{selected.label}</CardTitle>
             <CardAction>
@@ -307,16 +313,16 @@ export function KnowledgeGraphPage() {
               })}
             </div>
           </CardContent>
-        </Card>
+        </Card> : null}
       </section>
 
       <Card>
         <CardHeader>
-          <CardDescription>Scale-up Simulator</CardDescription>
-          <CardTitle>SQLite vectors to managed vector search, AuraDB Free to Enterprise</CardTitle>
+            <CardDescription>{demo ? 'Scale-up Simulator' : 'Measured graph performance'}</CardDescription>
+            <CardTitle>{demo ? 'SQLite vectors to managed vector search, AuraDB Free to Enterprise' : 'No live scale test has been run'}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[220px] min-w-0">
+          {demo ? <div className="h-[220px] min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={scaleData}>
                 <XAxis dataKey="corpus" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} />
@@ -326,7 +332,7 @@ export function KnowledgeGraphPage() {
                 <Line dataKey="accuracy" stroke="var(--chart-4)" strokeWidth={2} dot />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </div> : <div className="flex h-[220px] items-center justify-center text-center text-sm text-muted-foreground">Live performance will appear only after a measured benchmark run.</div>}
         </CardContent>
       </Card>
     </div>

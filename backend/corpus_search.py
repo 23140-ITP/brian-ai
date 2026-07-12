@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import csv
-import os
 import re
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+from workspace import corpus_dir, is_demo_workspace
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = Path(os.getenv("BRIAN_AI_DATA_DIR", str(ROOT / "data")))
-CORPUS_DIR = DATA_DIR / "corpus"
 
 TOKEN_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)?", re.IGNORECASE)
 PDF_TEXT_RE = re.compile(rb"\((.*?)\)\s*Tj")
@@ -73,27 +70,34 @@ def split_chunks(filename: str, text: str) -> list[Chunk]:
     return chunks
 
 
-@lru_cache(maxsize=1)
-def load_corpus() -> tuple[Chunk, ...]:
+@lru_cache(maxsize=4)
+def _load_corpus(directory: str) -> tuple[Chunk, ...]:
     chunks: list[Chunk] = []
-    if not CORPUS_DIR.exists():
+    selected_dir = Path(directory)
+    if not selected_dir.exists():
         return tuple()
-    for path in sorted(CORPUS_DIR.iterdir()):
+    for path in sorted(selected_dir.iterdir()):
         if path.is_file() and path.suffix.lower() in {".pdf", ".csv", ".txt"}:
             chunks.extend(split_chunks(path.name, read_text(path)))
     return tuple(chunks)
 
 
+def load_corpus() -> tuple[Chunk, ...]:
+    return _load_corpus(str(corpus_dir()))
+
+
 def refresh_corpus() -> None:
-    load_corpus.cache_clear()
+    _load_corpus.cache_clear()
 
 
-def search(query: str, limit: int = 5) -> list[Chunk]:
+def search(query: str, limit: int = 5, source_file: str | None = None) -> list[Chunk]:
     query_tokens = set(tokenize(query))
     if not query_tokens:
         return []
     ranked: list[tuple[float, Chunk]] = []
     for chunk in load_corpus():
+        if source_file and chunk.filename != source_file:
+            continue
         overlap = query_tokens & set(chunk.tokens)
         if not overlap:
             continue
@@ -115,7 +119,9 @@ def answer_query(query: str, matches: list[Chunk] | None = None) -> dict:
 
     snippets = " ".join(chunk.text for chunk in matches[:3])
     lower = query.lower()
-    if "oisd" in lower or "lel" in lower or "25" in lower:
+    if not is_demo_workspace():
+        lead = "Brian AI found evidence in the Live workspace."
+    elif "oisd" in lower or "lel" in lower or "25" in lower:
         lead = "The strongest evidence points to the OISD/PESO compliance requirement and the plant evidence linked below."
     elif "v-301" in lower or "safety valve" in lower:
         lead = "V-301 requires follow-up because the retrieved pressure-vessel evidence shows an unresolved safety-valve documentation gap."

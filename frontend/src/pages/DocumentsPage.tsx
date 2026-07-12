@@ -30,9 +30,10 @@ const ingestSteps = ['Extracting text', 'Chunking', 'Indexing vectors', 'Extract
 type IngestStatus = 'idle' | 'progress' | 'success' | 'error'
 
 export function DocumentsPage() {
-  const { setActiveDocumentId } = useAppStore()
+  const { setActiveDocumentId, workspace } = useAppStore()
+  const demo = workspace === 'demo'
   const [steps, setSteps] = useState<string[]>([])
-  const [library, setLibrary] = useState<DocumentMeta[]>(documents)
+  const [library, setLibrary] = useState<DocumentMeta[]>(demo ? documents : [])
   const [message, setMessage] = useState('')
   const [ingestStatus, setIngestStatus] = useState<IngestStatus>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -40,7 +41,7 @@ export function DocumentsPage() {
 
   useEffect(() => {
     api.documents().then(setLibrary)
-  }, [])
+  }, [workspace])
 
   const ingest = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -72,12 +73,13 @@ export function DocumentsPage() {
   }
 
   const ingesting = ingestStatus === 'progress'
+  const uploadDisabled = demo || ingesting
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Document Intelligence</h1>
-        <p className="text-sm text-muted-foreground">Upload PDFs or CSVs and Brian AI updates RAG, graph links, compliance evidence, and alerts.</p>
+        <p className="text-sm text-muted-foreground">{demo ? 'Explore the seeded refinery corpus. Switch to Live to upload evidence.' : 'Upload PDFs or CSVs and Brian AI updates RAG, graph links, compliance evidence, and alerts.'}</p>
       </header>
 
       <Card>
@@ -85,7 +87,7 @@ export function DocumentsPage() {
           <CardTitle>
             <h2>Ingest a document</h2>
           </CardTitle>
-          <CardDescription>Add source material to the refinery knowledge corpus.</CardDescription>
+            <CardDescription>{demo ? 'The Demo workspace is read-only.' : 'Add source material to the Live knowledge corpus.'}</CardDescription>
         </CardHeader>
         <CardContent>
           <FieldGroup>
@@ -93,15 +95,15 @@ export function DocumentsPage() {
               <FieldLabel
                 htmlFor="document-ingest"
                 role="button"
-                tabIndex={ingesting ? -1 : 0}
-                aria-disabled={ingesting}
+                tabIndex={uploadDisabled ? -1 : 0}
+                aria-disabled={uploadDisabled}
                 aria-controls="document-ingest"
                 className="block w-full cursor-pointer rounded-lg transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
                 onClick={(event) => {
-                  if (ingesting) event.preventDefault()
+                  if (uploadDisabled) event.preventDefault()
                 }}
                 onKeyDown={(event) => {
-                  if (!ingesting && (event.key === 'Enter' || event.key === ' ')) {
+                  if (!uploadDisabled && (event.key === 'Enter' || event.key === ' ')) {
                     event.preventDefault()
                     fileInputRef.current?.click()
                   }
@@ -110,8 +112,8 @@ export function DocumentsPage() {
                 <Empty className="border">
                   <EmptyHeader>
                     <EmptyMedia variant="icon"><UploadCloud /></EmptyMedia>
-                    <EmptyTitle>Drop files or click to ingest</EmptyTitle>
-                    <EmptyDescription>PDF and CSV supported - updates the backend corpus when the API is running</EmptyDescription>
+                    <EmptyTitle>{demo ? 'Demo evidence is locked' : 'Drop files or click to ingest'}</EmptyTitle>
+                    <EmptyDescription>{demo ? 'Switch to Live to create an isolated evidence library.' : 'PDF, CSV, and text files supported'}</EmptyDescription>
                   </EmptyHeader>
                 </Empty>
               </FieldLabel>
@@ -121,7 +123,7 @@ export function DocumentsPage() {
                 type="file"
                 accept=".pdf,.csv,.txt"
                 onChange={ingest}
-                disabled={ingesting}
+                disabled={uploadDisabled}
                 className="hidden"
                 tabIndex={-1}
                 aria-label="Upload document for ingestion"

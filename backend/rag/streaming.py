@@ -6,8 +6,8 @@ import json
 from rag.agent import ERR_EMPTY_KB, run_query
 
 
-async def stream_query_events(query: str, model: str, scope: str):
-    result = await asyncio.to_thread(run_query, query, model, scope)
+async def stream_query_events(query: str, model: str, scope: str, source_file: str | None = None):
+    result = await asyncio.to_thread(run_query, query, model, scope, source_file)
     if result.get("error") == ERR_EMPTY_KB:
         yield f"event: error\ndata: {json.dumps({'error': ERR_EMPTY_KB})}\n\n"
         return

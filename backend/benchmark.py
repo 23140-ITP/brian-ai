@@ -2,25 +2,23 @@ from __future__ import annotations
 
 import asyncio
 import json
-from pathlib import Path
+import time
 
-from corpus_search import DATA_DIR
 from mock_data import BENCHMARK_RESULTS
 from rag.agent import run_query
-
-
-BENCHMARK_CACHE = DATA_DIR / "benchmark_cache.json"
+from workspace import data_dir, is_demo_workspace
 
 
 def load_benchmark_results() -> list[dict]:
-    if BENCHMARK_CACHE.exists():
+    benchmark_cache = data_dir() / "benchmark_cache.json"
+    if benchmark_cache.exists():
         try:
-            data = json.loads(BENCHMARK_CACHE.read_text(encoding="utf-8"))
+            data = json.loads(benchmark_cache.read_text(encoding="utf-8"))
             if isinstance(data, list) and data:
                 return data
         except json.JSONDecodeError:
             pass
-    return BENCHMARK_RESULTS
+    return BENCHMARK_RESULTS if is_demo_workspace() else []
 
 
 async def stream_benchmark_events():
@@ -36,18 +34,21 @@ async def stream_benchmark_events():
 
 def spot_check(index: int) -> dict:
     results = load_benchmark_results()
+    if not results:
+        raise IndexError("No live benchmark suite has been configured.")
     row = results[index % len(results)]
+    started = time.perf_counter()
     result = run_query(row["question"], scope="benchmark")
+    latency = time.perf_counter() - started
     expected_tokens = {token.lower().strip(".,") for token in row["expected"].split() if len(token) > 2}
     answer_tokens = {token.lower().strip(".,") for token in result["answer"].split()}
     overlap = expected_tokens & answer_tokens
-    latency = row.get("latencyS", row.get("latency_s", 4.0))
     return {
         **row,
         "liveAnswer": result["answer"],
-        "liveLatencyS": round(float(latency) + 0.6, 1),
+        "liveLatencyS": round(latency, 3),
         "liveCitations": result["citations"],
         "liveConfidence": result["confidence"],
-        "correct": bool(overlap) or bool(row["correct"]),
+        "correct": bool(overlap),
         "cacheDelta": "live retrieval overlaps expected answer" if overlap else "review live retrieval evidence",
     }

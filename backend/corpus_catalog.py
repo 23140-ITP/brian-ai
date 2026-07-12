@@ -3,12 +3,14 @@ from __future__ import annotations
 import json
 import re
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from threading import RLock
 
-from corpus_search import CORPUS_DIR, read_text, split_chunks
+from corpus_search import read_text, split_chunks
 from ingestion.document_classifier import classify_document
 from mock_data import DOCUMENTS as SEED_DOCUMENTS
+from workspace import corpus_dir, is_demo_workspace
 
 
 SUPPORTED_SUFFIXES = {".pdf", ".csv", ".txt"}
@@ -19,9 +21,10 @@ def _document_id(filename: str) -> str:
 
 
 class CorpusCatalog:
-    def __init__(self, corpus_dir: Path = CORPUS_DIR):
+    def __init__(self, corpus_dir: Path, seed_documents: list[dict] | None = None):
         self.corpus_dir = Path(corpus_dir)
         self.catalog_path = self.corpus_dir.parent / "catalog.json"
+        self.seed_documents = seed_documents or []
         self._lock = RLock()
 
     def _load(self) -> dict[str, dict]:
@@ -55,7 +58,7 @@ class CorpusCatalog:
         return row
 
     def list_documents(self) -> list[dict]:
-        seed_by_filename = {row["filename"]: row for row in SEED_DOCUMENTS}
+        seed_by_filename = {row["filename"]: row for row in self.seed_documents}
         with self._lock:
             rows = self._load()
             if not self.corpus_dir.exists():
@@ -82,12 +85,18 @@ class CorpusCatalog:
             return sorted(present.values(), key=lambda row: row["filename"])
 
 
-catalog = CorpusCatalog()
+@lru_cache(maxsize=4)
+def _catalog(directory: str, include_demo_metadata: bool) -> CorpusCatalog:
+    return CorpusCatalog(Path(directory), SEED_DOCUMENTS if include_demo_metadata else [])
+
+
+def current_catalog() -> CorpusCatalog:
+    return _catalog(str(corpus_dir()), is_demo_workspace())
 
 
 def list_documents() -> list[dict]:
-    return catalog.list_documents()
+    return current_catalog().list_documents()
 
 
 def register_document(ingestion: dict) -> dict:
-    return catalog.register(ingestion)
+    return current_catalog().register(ingestion)

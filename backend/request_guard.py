@@ -9,6 +9,7 @@ from threading import Lock
 from fastapi import HTTPException, Request, UploadFile, status
 
 from config import get_settings
+from workspace import is_demo_workspace
 
 
 class SlidingWindowLimiter:
@@ -51,6 +52,8 @@ def enforce_rate_limit(request: Request, bucket: str, limit: int) -> None:
 def require_write_access(request: Request) -> None:
     settings = get_settings()
     enforce_rate_limit(request, "write", settings.write_rate_limit)
+    if is_demo_workspace():
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The demo workspace is read-only. Switch to Live to write data.")
     if settings.environment.lower() != "production" and not settings.write_token:
         return
     if not settings.write_token:

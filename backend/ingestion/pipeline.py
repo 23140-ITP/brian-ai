@@ -5,11 +5,12 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-from corpus_search import CORPUS_DIR, read_text, refresh_corpus, split_chunks
+from corpus_search import read_text, refresh_corpus, split_chunks
 from ingestion.document_classifier import classify_document
 from ingestion.entity_extractor import extract_entities
 from pattern_detector import detect_alerts
 from vector_store import index_chunks
+from workspace import corpus_dir
 
 
 INGEST_STEPS = [
@@ -21,11 +22,20 @@ INGEST_STEPS = [
 ]
 
 
+class DocumentAlreadyExistsError(Exception):
+    pass
+
+
 def save_upload(filename: str, content: bytes) -> Path:
     safe_name = Path(filename or "uploaded-document.txt").name
-    CORPUS_DIR.mkdir(parents=True, exist_ok=True)
-    destination = CORPUS_DIR / safe_name
-    destination.write_bytes(content)
+    destination_dir = corpus_dir()
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    destination = destination_dir / safe_name
+    try:
+        with destination.open("xb") as handle:
+            handle.write(content)
+    except FileExistsError as exc:
+        raise DocumentAlreadyExistsError(f"{safe_name} already exists in this workspace.") from exc
     return destination
 
 
@@ -59,7 +69,11 @@ def save_and_ingest(filename: str, content: bytes) -> dict:
 
 
 async def stream_save_and_ingest(filename: str, content: bytes):
-    destination = save_upload(filename, content)
+    try:
+        destination = save_upload(filename, content)
+    except DocumentAlreadyExistsError as exc:
+        yield {"event": "error", "data": {"code": "DUPLICATE_DOCUMENT", "detail": str(exc)}}
+        return
     total = len(INGEST_STEPS)
 
     text = read_text(destination)

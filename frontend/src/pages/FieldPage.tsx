@@ -72,16 +72,16 @@ function isFieldAnswerCacheEntry(value: unknown): value is FieldAnswerCacheEntry
     && typeof record.savedAt === 'string'
 }
 
-function loadCachedFieldAnswers(): FieldAnswerCacheEntry[] {
+function loadCachedFieldAnswers(workspace: 'demo' | 'live'): FieldAnswerCacheEntry[] {
   try {
-    const raw = localStorage.getItem(FIELD_CACHE_KEY)
+    const raw = localStorage.getItem(`${FIELD_CACHE_KEY}-${workspace}`)
     if (raw) {
       const parsed: unknown = JSON.parse(raw)
       if (Array.isArray(parsed)) {
         return parsed.filter(isFieldAnswerCacheEntry).slice(0, MAX_FIELD_CACHE_ENTRIES)
       }
     }
-    const legacyAnswer = localStorage.getItem(LEGACY_FIELD_CACHE_KEY)
+    const legacyAnswer = workspace === 'demo' ? localStorage.getItem(LEGACY_FIELD_CACHE_KEY) : null
     return legacyAnswer
       ? [{ id: 'legacy-field-answer', tag: 'Cached', answer: legacyAnswer, savedAt: new Date().toISOString() }]
       : []
@@ -91,13 +91,14 @@ function loadCachedFieldAnswers(): FieldAnswerCacheEntry[] {
 }
 
 export function FieldPage() {
-  const { sunlightMode, setSunlightMode } = useAppStore()
-  const [tag, setTag] = useState('P-204B')
-  const [manualTag, setManualTag] = useState('P-204B')
-  const [answer, setAnswer] = useState('Last answers are cached for offline field reference.')
+  const { sunlightMode, setSunlightMode, workspace } = useAppStore()
+  const demo = workspace === 'demo'
+  const [tag, setTag] = useState(demo ? 'P-204B' : 'NO TAG')
+  const [manualTag, setManualTag] = useState(demo ? 'P-204B' : '')
+  const [answer, setAnswer] = useState(demo ? 'Last answers are cached for offline field reference.' : 'Scan a nameplate or enter an equipment tag to query Live evidence.')
   const [busy, setBusy] = useState(false)
   const [voiceStatus, setVoiceStatus] = useState('Voice query uses browser speech recognition when available.')
-  const [cachedAnswers, setCachedAnswers] = useState<FieldAnswerCacheEntry[]>(loadCachedFieldAnswers)
+  const [cachedAnswers, setCachedAnswers] = useState<FieldAnswerCacheEntry[]>(() => loadCachedFieldAnswers(workspace))
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [installStatus, setInstallStatus] = useState('Offline shell ready after first load.')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -142,8 +143,8 @@ export function FieldPage() {
     setCachedAnswers((current) => {
       const next = [entry, ...current.filter((item) => item.answer !== nextAnswer)].slice(0, MAX_FIELD_CACHE_ENTRIES)
       try {
-        localStorage.setItem(FIELD_CACHE_KEY, JSON.stringify(next))
-        localStorage.setItem(LEGACY_FIELD_CACHE_KEY, nextAnswer)
+        localStorage.setItem(`${FIELD_CACHE_KEY}-${workspace}`, JSON.stringify(next))
+        if (demo) localStorage.setItem(LEGACY_FIELD_CACHE_KEY, nextAnswer)
       } catch {
         // Keep the in-memory cache usable when storage is unavailable or full.
       }
@@ -163,7 +164,11 @@ export function FieldPage() {
     setBusy(true)
     try {
       const ocr = await api.ocrNameplate(file)
-      const detectedTag = ocr.tag || 'P-204B'
+      if (!ocr.tag) {
+        setAnswer('No equipment tag was detected. Retry with a clearer image or use manual lookup.')
+        return
+      }
+      const detectedTag = ocr.tag
       setTag(detectedTag)
       setManualTag(detectedTag)
       const result = await api.ask(`Field scan ${detectedTag} current risk and next action`, 'openai/gpt-4o-mini')
@@ -171,7 +176,7 @@ export function FieldPage() {
       setAnswer(fieldAnswer)
       cacheFieldAnswer(detectedTag, fieldAnswer)
     } catch {
-      const fallback = cachedAnswers[0]?.answer || localStorage.getItem(LEGACY_FIELD_CACHE_KEY) || 'Unable to read the nameplate. Use manual tag search or retry with a clearer frame.'
+      const fallback = cachedAnswers[0]?.answer || (demo ? localStorage.getItem(LEGACY_FIELD_CACHE_KEY) : null) || 'Unable to read the nameplate. Use manual tag search or retry with a clearer frame.'
       setAnswer(fallback)
     } finally {
       setBusy(false)
@@ -207,7 +212,8 @@ export function FieldPage() {
   const voiceQuery = async () => {
     const SpeechRecognition = (window as SpeechRecognitionWindow).SpeechRecognition || (window as SpeechRecognitionWindow).webkitSpeechRecognition
     if (!SpeechRecognition) {
-      await runDefaultVoiceQuery('Speech recognition is unavailable in this browser. Running the default field voice query.')
+      if (demo) await runDefaultVoiceQuery('Speech recognition is unavailable in this browser. Running the default field voice query.')
+      else setVoiceStatus('Speech recognition is unavailable. Use manual lookup instead.')
       return
     }
 
@@ -222,7 +228,11 @@ export function FieldPage() {
     }
     recognition.onerror = () => {
       fallbackStarted = true
-      void runDefaultVoiceQuery('Speech capture failed. Running the default field voice query.')
+      if (demo) void runDefaultVoiceQuery('Speech capture failed. Running the default field voice query.')
+      else {
+        setVoiceStatus('Speech capture failed. No default query was submitted.')
+        setBusy(false)
+      }
     }
     recognition.onend = () => {
       if (!fallbackStarted) setBusy(false)
@@ -232,7 +242,11 @@ export function FieldPage() {
     try {
       recognition.start()
     } catch {
-      await runDefaultVoiceQuery('Speech capture could not start. Running the default field voice query.')
+      if (demo) await runDefaultVoiceQuery('Speech capture could not start. Running the default field voice query.')
+      else {
+        setVoiceStatus('Speech capture could not start. Use manual lookup instead.')
+        setBusy(false)
+      }
     }
   }
 
@@ -262,6 +276,7 @@ export function FieldPage() {
               </Link>
             </Button>
             <h1 className="min-w-0 text-xl font-semibold tracking-tight">Brian AI Field - {tag}</h1>
+            <Badge variant="outline">{demo ? 'Demo data' : 'Live data'}</Badge>
           </div>
           <div className="flex flex-col gap-3 sm:items-end">
             {installPrompt && (

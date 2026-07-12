@@ -9,8 +9,9 @@ from pathlib import Path
 from typing import Callable
 
 from config import get_settings
-from corpus_search import Chunk, DATA_DIR, tokenize
+from corpus_search import Chunk, tokenize
 from llm.openrouter import generate_embeddings
+from workspace import data_dir
 
 
 EmbeddingFunction = Callable[[list[str]], list[list[float]] | None]
@@ -75,16 +76,22 @@ class SQLiteVectorStore:
             connection.commit()
         return {"chunks": len(chunks), "cache_hits": len(chunks) - len(missing), "indexed": indexed}
 
-    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+    def search(self, query: str, limit: int = 5, source_file: str | None = None) -> list[Chunk]:
         vectors = self.embed([query])
         if not vectors:
             return []
         query_vector = vectors[0]
         with closing(self._connect()) as connection:
-            rows = connection.execute(
-                "SELECT source_file, chunk_text, embedding_json FROM vectors WHERE model = ?",
-                (self.model,),
-            ).fetchall()
+            if source_file:
+                rows = connection.execute(
+                    "SELECT source_file, chunk_text, embedding_json FROM vectors WHERE model = ? AND source_file = ?",
+                    (self.model, source_file),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    "SELECT source_file, chunk_text, embedding_json FROM vectors WHERE model = ?",
+                    (self.model,),
+                ).fetchall()
         ranked = sorted(
             ((_cosine(query_vector, json.loads(embedding)), filename, text) for filename, text, embedding in rows),
             key=lambda row: row[0],
@@ -103,15 +110,15 @@ class SQLiteVectorStore:
 
 def _default_store() -> SQLiteVectorStore:
     settings = get_settings()
-    return SQLiteVectorStore(DATA_DIR / "vectors.db", settings.openrouter_embedding_model, generate_embeddings)
+    return SQLiteVectorStore(data_dir() / "vectors.db", settings.openrouter_embedding_model, generate_embeddings)
 
 
 def index_chunks(chunks: list[Chunk]) -> dict:
     return _default_store().index(chunks)
 
 
-def semantic_search(query: str, limit: int = 5) -> list[Chunk]:
-    return _default_store().search(query, limit)
+def semantic_search(query: str, limit: int = 5, source_file: str | None = None) -> list[Chunk]:
+    return _default_store().search(query, limit, source_file)
 
 
 def vector_stats() -> dict:

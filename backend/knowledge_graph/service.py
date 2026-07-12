@@ -5,6 +5,7 @@ from collections import defaultdict, deque
 from database import load_graph_store, neo4j_status, sync_graph_store
 from graph_builder import build_graph
 from mock_data import GRAPH_EDGES, GRAPH_NODES, completeness
+from workspace import is_demo_workspace
 
 
 async def _graph() -> tuple[list[dict], list[dict]]:
@@ -12,7 +13,9 @@ async def _graph() -> tuple[list[dict], list[dict]]:
     if stored and stored[0]:
         return stored
     nodes, edges = build_graph()
-    return (nodes or GRAPH_NODES, edges or GRAPH_EDGES)
+    if is_demo_workspace():
+        return (nodes or GRAPH_NODES, edges or GRAPH_EDGES)
+    return nodes, edges
 
 
 async def refresh_graph_store() -> bool:
@@ -35,7 +38,7 @@ async def completeness_score() -> dict:
     equipment = {node["id"] for node in nodes if node["type"] == "Equipment"}
     linked = {edge["source"] for edge in edges if edge["source"] in equipment} | {edge["target"] for edge in edges if edge["target"] in equipment}
     if not equipment:
-        return completeness()
+        return completeness() if is_demo_workspace() else {"totalTags": 0, "linkedTags": 0, "score": 0, "nodes": len(nodes), "edges": len(edges)}
     return {
         "totalTags": len(equipment),
         "linkedTags": len(linked),

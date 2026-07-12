@@ -2,20 +2,19 @@ import asyncio
 import json
 from contextlib import asynccontextmanager, suppress
 
-from fastapi import FastAPI, Request, UploadFile
+from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from benchmark import load_benchmark_results, spot_check, stream_benchmark_events
-from compliance.checker import compliance_events
+from compliance.checker import compliance_events, compliance_results
 from config import get_settings
 from database import close_driver, create_schema, neo4j_keepalive_enabled, neo4j_keepalive_loop
 from corpus_catalog import list_documents, register_document
-from ingestion.pipeline import save_and_ingest, stream_save_and_ingest
+from ingestion.pipeline import DocumentAlreadyExistsError, save_and_ingest, stream_save_and_ingest
 from knowledge_capture import capture_questions as get_capture_questions
 from knowledge_capture import ingest_expert_knowledge
 from knowledge_graph.service import completeness_score, graph_edges, graph_nodes, query_graph, refresh_graph_store
-from mock_data import COMPLIANCE_RESULTS
 from models.schemas import KnowledgeCaptureRequest, OCRResult, QueryRequest, QueryResponse
 from ocr.nameplate import extract_tag_from_upload
 from pattern_detector import detect_alerts
@@ -23,6 +22,7 @@ from rag.agent import run_query
 from rag.streaming import stream_query_events
 from request_guard import enforce_rate_limit, read_limited_upload, require_write_access
 from system_status import provider_status
+from workspace import WorkspaceMiddleware, current_workspace
 
 settings = get_settings()
 
@@ -45,6 +45,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="Brian AI API", version="1.0.0", lifespan=lifespan)
+app.add_middleware(WorkspaceMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -56,7 +57,7 @@ app.add_middleware(
 
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "ok", "version": "1.0.0", "corpus_docs": len(list_documents())}
+    return {"status": "ok", "version": "1.0.0", "workspace": current_workspace(), "corpus_docs": len(list_documents())}
 
 
 @app.get("/api/system/status")
@@ -76,7 +77,7 @@ async def get_documents() -> list[dict]:
 
 @app.get("/api/compliance/results")
 async def get_compliance() -> list[dict]:
-    return COMPLIANCE_RESULTS
+    return compliance_results()
 
 
 @app.get("/api/compliance/check")
@@ -101,7 +102,7 @@ async def get_graph_completeness() -> dict:
 
 @app.post("/api/graph/query")
 async def graph_query(payload: dict) -> dict:
-    source = payload.get("source") or payload.get("from") or "P-204B"
+    source = payload.get("source") or payload.get("from") or ("P-204B" if current_workspace() == "demo" else "")
     target_type = payload.get("targetType") or payload.get("target_type") or "Regulation"
     return {
         "query": payload.get("cypher", ""),
@@ -121,13 +122,16 @@ async def get_benchmark(request: Request):
 @app.post("/api/benchmark/spot-check/{index}")
 async def benchmark_spot_check(index: int, request: Request) -> dict:
     enforce_rate_limit(request, "query", get_settings().query_rate_limit)
-    return await asyncio.to_thread(spot_check, index)
+    try:
+        return await asyncio.to_thread(spot_check, index)
+    except IndexError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.post("/api/query", response_model=QueryResponse)
 async def query(payload: QueryRequest, request: Request) -> QueryResponse:
     enforce_rate_limit(request, "query", get_settings().query_rate_limit)
-    result = await asyncio.to_thread(run_query, payload.query, payload.model, payload.scope)
+    result = await asyncio.to_thread(run_query, payload.query, payload.model, payload.scope, payload.source_file)
     return QueryResponse(**result)
 
 
@@ -135,7 +139,7 @@ async def query(payload: QueryRequest, request: Request) -> QueryResponse:
 async def query_stream(payload: QueryRequest, request: Request) -> StreamingResponse:
     enforce_rate_limit(request, "query", get_settings().query_rate_limit)
     return StreamingResponse(
-        stream_query_events(payload.query, payload.model, payload.scope),
+        stream_query_events(payload.query, payload.model, payload.scope, payload.source_file),
         media_type="text/event-stream",
     )
 
@@ -155,7 +159,10 @@ async def ingest(request: Request, file: UploadFile):
 
         return StreamingResponse(events(), media_type="text/event-stream")
 
-    response = await asyncio.to_thread(save_and_ingest, filename, content)
+    try:
+        response = await asyncio.to_thread(save_and_ingest, filename, content)
+    except DocumentAlreadyExistsError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     register_document(response)
     await refresh_graph_store()
     return response

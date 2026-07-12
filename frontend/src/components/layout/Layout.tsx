@@ -4,17 +4,26 @@ import { Outlet } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { API_STATUS_EVENT, dataMode } from '@/services/api'
+import { useAppStore } from '@/store/appStore'
 import { AppHeader } from './AppHeader'
 import { AppSidebar } from './AppSidebar'
 
 export function Layout() {
-  const [apiIssue, setApiIssue] = useState(dataMode === 'demo' ? 'Bundled demo evidence is active; live backend results are not being used.' : '')
+  const workspace = useAppStore((state) => state.workspace)
+  const [apiIssue, setApiIssue] = useState('')
 
   useEffect(() => {
+    setApiIssue(
+      workspace === 'demo'
+        ? 'The Demo workspace uses seeded, read-only refinery evidence.'
+        : dataMode === 'demo'
+          ? 'The Live workspace needs a backend connection; no demo results will be substituted.'
+          : ''
+    )
     const listener = (event: Event) => setApiIssue((event as CustomEvent<string>).detail)
     window.addEventListener(API_STATUS_EVENT, listener)
     return () => window.removeEventListener(API_STATUS_EVENT, listener)
-  }, [])
+  }, [workspace])
 
   return (
     <SidebarProvider defaultOpen>
@@ -29,13 +38,13 @@ export function Layout() {
         <AppHeader />
         <div id="main-content" tabIndex={-1} className="flex min-w-0 flex-1 flex-col p-4 outline-none md:p-6">
           {apiIssue && (
-            <Alert variant={dataMode === 'live' ? 'destructive' : 'default'} className="mb-4">
+            <Alert variant={workspace === 'live' ? 'destructive' : 'default'} className="mb-4">
               <TriangleAlert aria-hidden="true" />
-              <AlertTitle>{dataMode === 'live' ? 'Live backend unavailable' : 'Demo data mode'}</AlertTitle>
+              <AlertTitle>{workspace === 'live' ? 'Live workspace' : 'Demo data'}</AlertTitle>
               <AlertDescription>{apiIssue}</AlertDescription>
             </Alert>
           )}
-          <Outlet />
+          <Outlet key={workspace} />
         </div>
       </SidebarInset>
     </SidebarProvider>

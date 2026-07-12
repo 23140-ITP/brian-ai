@@ -18,11 +18,14 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { api } from '../services/api'
+import { useAppStore } from '../store/appStore'
 
 export function KnowledgeCapturePage() {
+  const workspace = useAppStore((state) => state.workspace)
+  const demo = workspace === 'demo'
   const [step, setStep] = useState(0)
-  const [expert, setExpert] = useState('A. Rao')
-  const [topic, setTopic] = useState('P-204B pump failures')
+  const [expert, setExpert] = useState(demo ? 'A. Rao' : '')
+  const [topic, setTopic] = useState(demo ? 'P-204B pump failures' : '')
   const [questions, setQuestions] = useState<string[]>([])
   const [answers, setAnswers] = useState<string[]>([])
   const [submitted, setSubmitted] = useState<{ doc_id: string; linked_entities: string[] } | null>(null)
@@ -36,9 +39,25 @@ export function KnowledgeCapturePage() {
       setQuestions(rows)
       setAnswers(Array(rows.length).fill(''))
     })
-  }, [])
+  }, [workspace])
 
   const reviewStep = questions.length + 1
+
+  if (demo) {
+    return (
+      <div className="flex flex-col gap-6">
+        <header className="flex flex-col gap-1">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">Expert Knowledge Capture</h1>
+          <p className="text-sm text-muted-foreground">The seeded demonstration is protected from writes.</p>
+        </header>
+        <Alert>
+          <FileText aria-hidden="true" />
+          <AlertTitle>Demo workspace is read-only</AlertTitle>
+          <AlertDescription>Switch to the Live workspace to capture an interview and add it to retrieval and the knowledge graph.</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()

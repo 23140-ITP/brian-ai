@@ -13,34 +13,55 @@ import {
   graphEdges,
   graphNodes
 } from '../data/mock'
+import { readWorkspace } from '@/lib/workspace'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
-export const dataMode: 'live' | 'demo' = import.meta.env.VITE_DATA_MODE === 'demo' || !API_BASE ? 'demo' : 'live'
+export const dataMode: 'live' | 'demo' = API_BASE ? 'live' : 'demo'
 export const API_STATUS_EVENT = 'brian-ai-api-status'
 const WRITE_TOKEN_KEY = 'brian-ai-write-token'
 
 function reportFailure(path: string) {
   if (dataMode === 'live') {
-    window.dispatchEvent(new CustomEvent(API_STATUS_EVENT, { detail: `Live backend request failed: ${path}` }))
+    window.dispatchEvent(new CustomEvent(API_STATUS_EVENT, { detail: `${readWorkspace() === 'live' ? 'Live' : 'Demo'} workspace request failed: ${path}` }))
   }
 }
 
 export function getWriteToken() {
-  return sessionStorage.getItem(WRITE_TOKEN_KEY) || ''
+  try {
+    return sessionStorage.getItem(WRITE_TOKEN_KEY) || ''
+  } catch {
+    return ''
+  }
 }
 
 export function setWriteToken(token: string) {
-  if (token) sessionStorage.setItem(WRITE_TOKEN_KEY, token)
-  else sessionStorage.removeItem(WRITE_TOKEN_KEY)
+  try {
+    if (token) sessionStorage.setItem(WRITE_TOKEN_KEY, token)
+    else sessionStorage.removeItem(WRITE_TOKEN_KEY)
+  } catch {
+    // Session-only access remains unavailable when browser storage is blocked.
+  }
+}
+
+function requestHeaders(headers: Record<string, string> = {}) {
+  const workspace = readWorkspace()
+  const token = workspace === 'live' ? getWriteToken() : ''
+  return {
+    ...headers,
+    'X-Brian-Workspace': workspace,
+    ...(token ? { 'X-Brian-Write-Token': token } : {})
+  }
 }
 
 function writeHeaders(headers: Record<string, string> = {}) {
   const token = getWriteToken()
-  return token ? { ...headers, 'X-Brian-Write-Token': token } : headers
+  return requestHeaders(token ? { ...headers, 'X-Brian-Write-Token': token } : headers)
 }
 
 export type SystemStatus = {
   api: string
+  workspace?: 'demo' | 'live'
+  readOnly?: boolean
   rag: {
     mode: string
     openrouterConfigured: boolean
@@ -93,26 +114,31 @@ export type GraphPathRecord = {
   relationships: string[]
 }
 
-async function getJson<T>(path: string, fallback: T): Promise<T> {
-  if (dataMode === 'demo') return fallback
+async function getJson<T>(path: string, demoFallback: T, liveFallback: T): Promise<T> {
+  const workspace = readWorkspace()
+  if (dataMode === 'demo') {
+    if (workspace === 'live') reportFailure(path)
+    return workspace === 'demo' ? demoFallback : liveFallback
+  }
 
   try {
-    const response = await fetch(`${API_BASE}${path}`)
+    const response = await fetch(`${API_BASE}${path}`, { headers: requestHeaders() })
     if (!response.ok) throw new Error(response.statusText)
     return (await response.json()) as T
   } catch {
     reportFailure(path)
-    return fallback
+    return workspace === 'demo' ? demoFallback : liveFallback
   }
 }
 
 async function streamBenchmarkRows(onRows?: (rows: BenchmarkResult[]) => void): Promise<BenchmarkResult[]> {
   if (dataMode === 'demo') {
-    onRows?.(benchmarkResults)
-    return benchmarkResults
+    const rows = readWorkspace() === 'demo' ? benchmarkResults : []
+    onRows?.(rows)
+    return rows
   }
 
-  const response = await fetch(`${API_BASE}/api/benchmark`, { headers: { Accept: 'text/event-stream' } })
+  const response = await fetch(`${API_BASE}/api/benchmark`, { headers: requestHeaders({ Accept: 'text/event-stream' }) })
   if (!response.ok || !response.body) throw new Error(response.statusText)
 
   const contentType = response.headers.get('content-type') || ''
@@ -147,7 +173,7 @@ type IngestResult = { doc_id: string; chunks: number; entities: number; alerts_t
 type IngestProgress = { current: number; total: number; step: string }
 
 export const api = {
-  health: () => getJson('/health', { status: 'local demo', version: '1.0.0' }),
+  health: () => getJson('/health', { status: 'local demo', version: '1.0.0' }, { status: 'unavailable', version: '1.0.0' }),
   systemStatus: () => getJson<SystemStatus>('/api/system/status', {
     api: 'local demo',
     rag: { mode: 'local-lexical-rag', openrouterConfigured: false, modelRouting: 'enabled' },
@@ -167,15 +193,24 @@ export const api = {
         { id: 'public-links', label: 'Public app links', status: 'manual', detail: 'Deploy to Vercel/Railway and set FRONTEND_PUBLIC_URL and BACKEND_PUBLIC_URL.' }
       ]
     }
+  }, {
+    api: 'unavailable',
+    workspace: 'live',
+    readOnly: false,
+    rag: { mode: 'unavailable', openrouterConfigured: false, modelRouting: 'disabled' },
+    graph: { configured: false, driverAvailable: false, mode: 'unavailable' },
+    index: { mode: 'unavailable', vectorPath: '', cache: { chunks: 0, files: 0, path: '', model: '' } },
+    deployment: { environment: 'unavailable', corsOrigins: [] }
   }),
-  alerts: () => getJson<Alert[]>('/api/alerts', alerts),
-  documents: () => getJson<DocumentMeta[]>('/api/documents', documents),
-  compliance: () => getJson<ComplianceRow[]>('/api/compliance/results', complianceRows),
+  alerts: () => getJson<Alert[]>('/api/alerts', alerts, []),
+  documents: () => getJson<DocumentMeta[]>('/api/documents', documents, []),
+  compliance: () => getJson<ComplianceRow[]>('/api/compliance/results', complianceRows, []),
   runComplianceCheck: async (
     onProgress: (current: number, total: number) => void,
     onClause: (row: ComplianceRow) => void
   ) => {
     if (dataMode === 'demo') {
+      if (readWorkspace() === 'live') throw new Error('Live backend unavailable')
       complianceRows.forEach((row, index) => {
         onProgress(index + 1, complianceRows.length)
         onClause(row)
@@ -184,7 +219,7 @@ export const api = {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/compliance/check`)
+      const response = await fetch(`${API_BASE}/api/compliance/check`, { headers: requestHeaders() })
       if (!response.ok || !response.body) throw new Error(response.statusText)
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
@@ -207,14 +242,12 @@ export const api = {
       }
     } catch {
       reportFailure('/api/compliance/check')
-      if (dataMode === 'live') throw new Error('Live compliance check unavailable')
-      complianceRows.forEach((row, index) => {
-        onProgress(index + 1, complianceRows.length)
-        onClause(row)
-      })
+      if (readWorkspace() === 'live') throw new Error('Live compliance check unavailable')
+      complianceRows.forEach((row, index) => { onProgress(index + 1, complianceRows.length); onClause(row) })
     }
   },
   ingestDocument: async (file: File, onProgress?: (progress: IngestProgress) => void) => {
+    if (readWorkspace() === 'demo') throw new Error('The demo workspace is read-only. Switch to Live to ingest documents.')
     const body = new FormData()
     body.append('file', file)
     const response = await fetch(`${API_BASE}/api/ingest`, { method: 'POST', headers: writeHeaders({ Accept: 'text/event-stream' }), body })
@@ -226,6 +259,7 @@ export const api = {
     const decoder = new TextDecoder()
     let buffer = ''
     let result: IngestResult | null = null
+    let streamError = ''
 
     while (true) {
       const { done, value } = await reader.read()
@@ -241,16 +275,18 @@ export const api = {
         const payload = JSON.parse(dataLine.slice(6))
         if (type === 'progress') onProgress?.(payload)
         if (type === 'done') result = payload
+        if (type === 'error') streamError = payload.detail || 'Document ingestion failed'
       }
     }
 
+    if (streamError) throw new Error(streamError)
     if (!result) throw new Error('Ingest stream ended without a result')
     return result
   },
   ocrNameplate: async (file: File) => {
     const body = new FormData()
     body.append('file', file)
-    const response = await fetch(`${API_BASE}/api/ocr/nameplate`, { method: 'POST', body })
+    const response = await fetch(`${API_BASE}/api/ocr/nameplate`, { method: 'POST', headers: requestHeaders(), body })
     if (!response.ok) throw new Error(response.statusText)
     return (await response.json()) as { tag: string | null; confidence: number; provider?: string }
   },
@@ -260,8 +296,15 @@ export const api = {
     'Which document or checklist should be updated after this interview?',
     'What spare parts should always be ready before a shutdown?',
     'What would you tell the next shift engineer before handing over?'
+  ], [
+    'Describe a critical failure you have seen and how it was resolved.',
+    'Which early warning signs are easy for new engineers to miss?',
+    'Which document or checklist should be updated after this interview?',
+    'What spare parts should always be ready before a shutdown?',
+    'What would you tell the next shift engineer before handing over?'
   ]),
   captureExpertKnowledge: async (payload: { session_id: string; expert_name: string; topic: string; answers: Array<{ question: string; answer: string }> }) => {
+    if (readWorkspace() === 'demo') throw new Error('The demo workspace is read-only. Switch to Live to capture knowledge.')
     const response = await fetch(`${API_BASE}/api/capture`, {
       method: 'POST',
       headers: writeHeaders({ 'Content-Type': 'application/json' }),
@@ -274,13 +317,13 @@ export const api = {
     try {
       return await streamBenchmarkRows(onRows)
     } catch {
-      const rows = await getJson<BenchmarkResult[]>('/api/benchmark', benchmarkResults)
+      const rows = await getJson<BenchmarkResult[]>('/api/benchmark', benchmarkResults, [])
       onRows?.(rows)
       return rows
     }
   },
   benchmarkSpotCheck: async (index: number) => {
-    const response = await fetch(`${API_BASE}/api/benchmark/spot-check/${index}`, { method: 'POST' })
+    const response = await fetch(`${API_BASE}/api/benchmark/spot-check/${index}`, { method: 'POST', headers: requestHeaders() })
     if (!response.ok) throw new Error(response.statusText)
     return (await response.json()) as BenchmarkResult & {
       liveAnswer: string
@@ -291,25 +334,28 @@ export const api = {
     }
   },
   graph: async () => ({
-    nodes: await getJson<GraphNode[]>('/api/graph/nodes', graphNodes),
-    edges: await getJson<GraphEdge[]>('/api/graph/edges', graphEdges)
+    nodes: await getJson<GraphNode[]>('/api/graph/nodes', graphNodes, []),
+    edges: await getJson<GraphEdge[]>('/api/graph/edges', graphEdges, [])
   }),
-  graphCompleteness: () => getJson('/api/graph/completeness', { totalTags: 73, linkedTags: 64, score: 0.877, nodes: 73, edges: 47 }),
+  graphCompleteness: () => getJson('/api/graph/completeness', { totalTags: 73, linkedTags: 64, score: 0.877, nodes: 73, edges: 47 }, { totalTags: 0, linkedTags: 0, score: 0, nodes: 0, edges: 0 }),
   graphPath: async (source: string, targetType: string) => {
-    if (dataMode === 'demo') return { source, targetType, records: [] }
+    if (dataMode === 'demo') {
+      if (readWorkspace() === 'demo') return { source, targetType, records: [] }
+      throw new Error('Live backend unavailable')
+    }
 
     const response = await fetch(`${API_BASE}/api/graph/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: requestHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ source, targetType })
     })
     if (!response.ok) throw new Error(response.statusText)
     return (await response.json()) as { source: string; targetType: string; records: GraphPathRecord[] }
   },
-  ask: async (query: string, model: string) => {
+  ask: async (query: string, model: string, sourceFile?: string) => {
     const lower = query.toLowerCase()
     const key = lower.includes('p-204') || lower.includes('seal') ? 'p204' : lower.includes('oisd') ? 'oisd' : lower.includes('v-301') ? 'v301' : 'default'
-    if (dataMode === 'demo') {
+    if (dataMode === 'demo' && readWorkspace() === 'demo') {
       return {
         answer: answerTemplates[key],
         citations: key === 'oisd'
@@ -322,14 +368,14 @@ export const api = {
     try {
       const response = await fetch(`${API_BASE}/api/query`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, model, scope: 'rag' })
+        headers: requestHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ query, model, scope: 'rag', source_file: sourceFile || null })
       })
       if (!response.ok) throw new Error(response.statusText)
       return (await response.json()) as { answer: string; citations: string[]; confidence: number }
     } catch {
       reportFailure('/api/query')
-      if (dataMode === 'live') throw new Error('Live backend unavailable; no demo answer was substituted.')
+      if (readWorkspace() === 'live') throw new Error('Live backend unavailable; no demo answer was substituted.')
       return {
         answer: answerTemplates[key],
         citations: key === 'oisd'
@@ -344,10 +390,11 @@ export const api = {
     model: string,
     onToken: (token: string) => void,
     onDone: (result: { citations: string[]; confidence: number }) => void,
-    onError?: (error: string) => void
+    onError?: (error: string) => void,
+    sourceFile?: string
   ) => {
-    if (dataMode === 'demo') {
-      const fallback = await api.ask(query, model)
+    if (dataMode === 'demo' && readWorkspace() === 'demo') {
+      const fallback = await api.ask(query, model, sourceFile)
       onToken(fallback.answer)
       onDone({ citations: fallback.citations, confidence: fallback.confidence })
       return
@@ -356,8 +403,8 @@ export const api = {
     try {
       const response = await fetch(`${API_BASE}/api/query/stream`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, model, scope: 'rag' })
+        headers: requestHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ query, model, scope: 'rag', source_file: sourceFile || null })
       })
       if (!response.ok || !response.body) throw new Error(response.statusText)
 
@@ -391,11 +438,11 @@ export const api = {
       onDone({ citations, confidence })
     } catch {
       reportFailure('/api/query/stream')
-      if (dataMode === 'live') {
+      if (readWorkspace() === 'live') {
         onError?.('ERR_BACKEND_UNAVAILABLE')
         return
       }
-      const fallback = await api.ask(query, model)
+      const fallback = await api.ask(query, model, sourceFile)
       onToken(fallback.answer)
       onDone({ citations: fallback.citations, confidence: fallback.confidence })
     }

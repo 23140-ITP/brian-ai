@@ -36,14 +36,17 @@ import {
 } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { chartTooltipStyle, complianceStatusVariant } from '@/lib/presentation'
+import { useAppStore } from '@/store/appStore'
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const [alertRows, setAlertRows] = useState<AlertRecord[]>(fallbackAlerts)
-  const [docRows, setDocRows] = useState<DocumentMeta[]>(documents)
-  const [compliance, setCompliance] = useState<ComplianceRow[]>(complianceRows)
-  const [benchmark, setBenchmark] = useState<BenchmarkResult[]>(benchmarkResults)
-  const [graphStats, setGraphStats] = useState({ totalTags: 73, linkedTags: 64, score: 0.877, nodes: 73, edges: 47 })
+  const workspace = useAppStore((state) => state.workspace)
+  const demo = workspace === 'demo'
+  const [alertRows, setAlertRows] = useState<AlertRecord[]>(demo ? fallbackAlerts : [])
+  const [docRows, setDocRows] = useState<DocumentMeta[]>(demo ? documents : [])
+  const [compliance, setCompliance] = useState<ComplianceRow[]>(demo ? complianceRows : [])
+  const [benchmark, setBenchmark] = useState<BenchmarkResult[]>(demo ? benchmarkResults : [])
+  const [graphStats, setGraphStats] = useState(demo ? { totalTags: 73, linkedTags: 64, score: 0.877, nodes: 73, edges: 47 } : { totalTags: 0, linkedTags: 0, score: 0, nodes: 0, edges: 0 })
   const [benchmarkOpen, setBenchmarkOpen] = useState(false)
   const [proveIt, setProveIt] = useState('Ready')
 
@@ -53,7 +56,7 @@ export function DashboardPage() {
     api.compliance().then(setCompliance)
     api.benchmark(setBenchmark).then(setBenchmark)
     api.graphCompleteness().then(setGraphStats)
-  }, [])
+  }, [workspace])
 
   const compliant = compliance.filter((row) => row.status === 'COMPLIANT').length
   const criticalGaps = compliance.filter((row) => row.status === 'NON_COMPLIANT').length
@@ -67,8 +70,8 @@ export function DashboardPage() {
     {
       icon: FileSearch,
       label: 'Documents unified',
-      value: `${Math.min(docRows.length, 20)}/20`,
-      detail: `${docRows.length} visible records`,
+      value: demo ? `${Math.min(docRows.length, 20)}/20` : `${docRows.length}`,
+      detail: demo ? `${docRows.length} visible records` : `${docRows.length} ingested sources`,
     },
     {
       icon: GitBranch,
@@ -86,27 +89,32 @@ export function DashboardPage() {
       icon: Activity,
       label: 'Failure Alerts',
       value: `${alertRows.length}`,
-      detail: '2 pattern-backed',
+      detail: demo ? '2 pattern-backed' : `${alertRows.length} derived from live records`,
     },
     {
       icon: Clock3,
       label: 'Time to answer',
       value: `${averageLatency}s`,
-      detail: 'vs. 3-4 hours manual',
+      detail: benchmark.length ? 'measured benchmark latency' : 'No benchmark run',
     },
     {
       icon: Bot,
       label: 'Benchmark accuracy',
       value: `${benchmarkAccuracy}%`,
-      detail: `${correctBenchmark}/${benchmark.length} cached checks`,
+      detail: benchmark.length ? `${correctBenchmark}/${benchmark.length} measured checks` : 'No live benchmark suite',
     },
   ]
 
   const prove = async () => {
+    if (!demo && !docRows.length) {
+      setProveIt('Upload evidence in Document Intelligence first.')
+      return
+    }
     setProveIt('Running evidence query...')
     const start = performance.now()
     try {
-      const result = await api.ask('What caused the P-204B seal failure?', 'openai/gpt-4o-mini')
+      const question = demo ? 'What caused the P-204B seal failure?' : 'Summarize the strongest operational evidence in this workspace.'
+      const result = await api.ask(question, 'openai/gpt-4o-mini')
       setProveIt(`${((performance.now() - start) / 1000).toFixed(1)}s: ${result.answer.slice(0, 96)}...`)
     } catch {
       setProveIt('Live backend unavailable. No demo answer was substituted.')
@@ -119,12 +127,14 @@ export function DashboardPage() {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight">Brian AI Command Center</h1>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Ask across 20 plant documents, compliance clauses, work orders, inspection records, and expert notes.
+            {demo
+              ? 'Ask across 20 plant documents, compliance clauses, work orders, inspection records, and expert notes.'
+              : `Ask across ${docRows.length} uploaded sources with workspace-isolated evidence.`}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" onClick={prove}>Prove It</Button>
-          <Button type="button" variant="outline" onClick={() => setBenchmarkOpen(true)}>Benchmark Mode</Button>
+          <Button type="button" variant="outline" onClick={() => setBenchmarkOpen(true)} disabled={!demo && !benchmark.length}>Benchmark Mode</Button>
         </div>
       </header>
 
@@ -165,11 +175,11 @@ export function DashboardPage() {
         <Card>
           <CardHeader>
             <CardDescription>AI Copilot</CardDescription>
-            <CardTitle>Ask across 20 plant documents</CardTitle>
+            <CardTitle>{demo ? 'Ask across 20 plant documents' : `Ask across ${docRows.length} live documents`}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex min-h-44 flex-col justify-center gap-4 rounded-lg border bg-muted/40 p-4">
-              <p className="text-base font-medium">What caused the P-204B seal failure?</p>
+              <p className="text-base font-medium">{demo ? 'What caused the P-204B seal failure?' : 'Summarize the strongest operational evidence.'}</p>
               <p className="text-sm text-muted-foreground" aria-live="polite">{proveIt}</p>
             </div>
           </CardContent>
@@ -178,22 +188,22 @@ export function DashboardPage() {
         <Card>
           <CardHeader>
             <CardDescription>Business Impact</CardDescription>
-            <CardTitle>ROI impact for Bharat Refinery</CardTitle>
+            <CardTitle>{demo ? 'ROI impact for Bharat Refinery' : 'Measured impact'}</CardTitle>
             <CardAction>
               <IndianRupee aria-hidden="true" />
             </CardAction>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-3">
             <div className="flex flex-col gap-1 rounded-lg border p-4">
-              <strong className="text-2xl font-semibold">3.5 hrs</strong>
-              <span className="text-sm text-muted-foreground">saved per evidence search</span>
+              <strong className="text-2xl font-semibold">{demo ? '3.5 hrs' : 'Not measured'}</strong>
+              <span className="text-sm text-muted-foreground">{demo ? 'saved per evidence search' : 'complete live searches to establish a baseline'}</span>
             </div>
             <div className="flex flex-col gap-1 rounded-lg border p-4">
-              <strong className="text-2xl font-semibold">2</strong>
+              <strong className="text-2xl font-semibold">{demo ? '2' : criticalGaps}</strong>
               <span className="text-sm text-muted-foreground">critical gaps surfaced before audit</span>
             </div>
             <div className="flex flex-col gap-1 rounded-lg border p-4">
-              <strong className="text-2xl font-semibold">3</strong>
+              <strong className="text-2xl font-semibold">{demo ? '3' : alertRows.length}</strong>
               <span className="text-sm text-muted-foreground">failure patterns made actionable</span>
             </div>
           </CardContent>
@@ -227,11 +237,11 @@ export function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardDescription>Scale Simulation</CardDescription>
-            <CardTitle>Stable latency as corpus grows</CardTitle>
+            <CardDescription>{demo ? 'Scale Simulation' : 'Load testing'}</CardDescription>
+            <CardTitle>{demo ? 'Stable latency as corpus grows' : 'No measured scale run yet'}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[230px] min-w-0">
+            {demo ? <div className="h-[230px] min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={scaleData}>
                   <defs>
@@ -246,7 +256,7 @@ export function DashboardPage() {
                   <Area type="monotone" dataKey="latency" stroke="var(--chart-2)" fill="url(#latency)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+            </div> : <div className="flex h-[230px] items-center justify-center text-center text-sm text-muted-foreground">Run a measured benchmark before reporting scale or latency projections.</div>}
           </CardContent>
         </Card>
       </section>

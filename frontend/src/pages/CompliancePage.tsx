@@ -36,12 +36,13 @@ import { complianceStatusVariant } from '@/lib/presentation'
 
 export function CompliancePage() {
   const navigate = useNavigate()
-  const { setCopilotDraftQuery } = useAppStore()
-  const [rows, setRows] = useState<ComplianceRow[]>(complianceRows)
-  const [selected, setSelected] = useState<ComplianceRow | null>(complianceRows[0])
+  const { setCopilotDraftQuery, workspace } = useAppStore()
+  const demo = workspace === 'demo'
+  const [rows, setRows] = useState<ComplianceRow[]>(demo ? complianceRows : [])
+  const [selected, setSelected] = useState<ComplianceRow | null>(demo ? complianceRows[0] : null)
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [total, setTotal] = useState(18)
+  const [total, setTotal] = useState(demo ? 18 : 0)
 
   useEffect(() => {
     api.compliance().then((nextRows) => {
@@ -49,7 +50,7 @@ export function CompliancePage() {
       setSelected(nextRows[0] || null)
       setTotal(nextRows.length || 18)
     })
-  }, [])
+  }, [workspace])
 
   const runCheck = () => {
     setRunning(true)
@@ -79,7 +80,7 @@ export function CompliancePage() {
       <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-2xl font-semibold tracking-tight">OISD/PESO Compliance Matrix</h1>
-          <p className="text-sm text-muted-foreground">Bharat Refinery, Jamnagar - Last run: July 7, 2026</p>
+          <p className="text-sm text-muted-foreground">{demo ? 'Bharat Refinery, Jamnagar - Last run: July 7, 2026' : 'Extracted requirements and candidate evidence from the Live workspace'}</p>
         </div>
         <Button type="button" onClick={runCheck} disabled={running}>
           {running ? (

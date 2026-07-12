@@ -6,11 +6,12 @@ from datetime import datetime, timezone
 from typing import Any
 
 from config import get_settings
+from workspace import current_workspace
 
 HEARTBEAT_INTERVAL_SECONDS = 60 * 60
 _driver: Any | None = None
-_last_error: str | None = None
-_last_sync_at: str | None = None
+_last_error: dict[str, str | None] = {"demo": None, "live": None}
+_last_sync_at: dict[str, str | None] = {"demo": None, "live": None}
 
 
 def neo4j_configured() -> bool:
@@ -90,7 +91,9 @@ async def create_schema(timeout_seconds: float = 8.0) -> dict:
         return {"ok": False, "reason": reason}
 
     statements = [
-        "CREATE CONSTRAINT brian_ai_entity_id IF NOT EXISTS FOR (e:BrianAIEntity) REQUIRE e.id IS UNIQUE",
+        "MATCH (e:BrianAIEntity) WHERE e.workspaceId IS NULL SET e.workspaceId = 'demo'",
+        "DROP CONSTRAINT brian_ai_entity_id IF EXISTS",
+        "CREATE CONSTRAINT brian_ai_workspace_entity IF NOT EXISTS FOR (e:BrianAIEntity) REQUIRE (e.workspaceId, e.id) IS UNIQUE",
         "CREATE CONSTRAINT brian_ai_heartbeat_id IF NOT EXISTS FOR (h:BrianAIHeartbeat) REQUIRE h.id IS UNIQUE",
     ]
 
@@ -108,7 +111,7 @@ async def create_schema(timeout_seconds: float = 8.0) -> dict:
 
 
 async def sync_graph_store(nodes: list[dict], edges: list[dict], timeout_seconds: float = 15.0) -> bool:
-    global _last_error, _last_sync_at
+    workspace = current_workspace()
     driver = get_driver()
     if driver is None:
         return False
@@ -119,6 +122,7 @@ async def sync_graph_store(nodes: list[dict], edges: list[dict], timeout_seconds
             "type": node["type"],
             "score": node.get("score", 0),
             "details": json.dumps(node.get("details", {})),
+            "workspaceId": workspace,
         }
         for node in nodes
     ]
@@ -127,20 +131,23 @@ async def sync_graph_store(nodes: list[dict], edges: list[dict], timeout_seconds
         async with driver.session() as session:
             statements = [
                 (
-                    "UNWIND $nodes AS row MERGE (n:BrianAIEntity {id: row.id}) "
+                    "UNWIND $nodes AS row MERGE (n:BrianAIEntity {workspaceId: row.workspaceId, id: row.id}) "
                     "SET n.label = row.label, n.type = row.type, n.score = row.score, n.details = row.details",
                     {"nodes": node_rows},
                 ),
                 (
-                    "MATCH (n:BrianAIEntity) WHERE NOT n.id IN $ids DETACH DELETE n",
-                    {"ids": [node["id"] for node in node_rows]},
+                    "MATCH (n:BrianAIEntity {workspaceId: $workspaceId}) WHERE NOT n.id IN $ids DETACH DELETE n",
+                    {"workspaceId": workspace, "ids": [node["id"] for node in node_rows]},
                 ),
-                ("MATCH (:BrianAIEntity)-[r:BRIAN_AI_RELATION]->(:BrianAIEntity) DELETE r", {}),
                 (
-                    "UNWIND $edges AS row MATCH (source:BrianAIEntity {id: row.source}) "
-                    "MATCH (target:BrianAIEntity {id: row.target}) "
+                    "MATCH (:BrianAIEntity {workspaceId: $workspaceId})-[r:BRIAN_AI_RELATION]->(:BrianAIEntity {workspaceId: $workspaceId}) DELETE r",
+                    {"workspaceId": workspace},
+                ),
+                (
+                    "UNWIND $edges AS row MATCH (source:BrianAIEntity {workspaceId: $workspaceId, id: row.source}) "
+                    "MATCH (target:BrianAIEntity {workspaceId: $workspaceId, id: row.target}) "
                     "MERGE (source)-[r:BRIAN_AI_RELATION {kind: row.relationship}]->(target)",
-                    {"edges": edges},
+                    {"workspaceId": workspace, "edges": edges},
                 ),
             ]
             async def write_graph(transaction) -> None:
@@ -153,15 +160,15 @@ async def sync_graph_store(nodes: list[dict], edges: list[dict], timeout_seconds
     try:
         await asyncio.wait_for(run_sync(), timeout=timeout_seconds)
     except Exception as exc:  # pragma: no cover - depends on external AuraDB state
-        _last_error = exc.__class__.__name__
+        _last_error[workspace] = exc.__class__.__name__
         return False
-    _last_error = None
-    _last_sync_at = datetime.now(timezone.utc).isoformat()
+    _last_error[workspace] = None
+    _last_sync_at[workspace] = datetime.now(timezone.utc).isoformat()
     return True
 
 
 async def load_graph_store(timeout_seconds: float = 10.0) -> tuple[list[dict], list[dict]] | None:
-    global _last_error
+    workspace = current_workspace()
     driver = get_driver()
     if driver is None:
         return None
@@ -170,12 +177,15 @@ async def load_graph_store(timeout_seconds: float = 10.0) -> tuple[list[dict], l
         async with driver.session() as session:
             async def read_graph(transaction) -> tuple[list[dict], list[dict]]:
                 node_result = await transaction.run(
-                    "MATCH (n:BrianAIEntity) RETURN n.id AS id, n.label AS label, n.type AS type, n.score AS score, n.details AS details"
+                    "MATCH (n:BrianAIEntity {workspaceId: $workspaceId}) "
+                    "RETURN n.id AS id, n.label AS label, n.type AS type, n.score AS score, n.details AS details",
+                    {"workspaceId": workspace},
                 )
                 node_rows = await node_result.data()
                 edge_result = await transaction.run(
-                    "MATCH (source:BrianAIEntity)-[r:BRIAN_AI_RELATION]->(target:BrianAIEntity) "
-                    "RETURN source.id AS source, target.id AS target, r.kind AS relationship"
+                    "MATCH (source:BrianAIEntity {workspaceId: $workspaceId})-[r:BRIAN_AI_RELATION]->(target:BrianAIEntity {workspaceId: $workspaceId}) "
+                    "RETURN source.id AS source, target.id AS target, r.kind AS relationship",
+                    {"workspaceId": workspace},
                 )
                 return node_rows, await edge_result.data()
 
@@ -195,9 +205,9 @@ async def load_graph_store(timeout_seconds: float = 10.0) -> tuple[list[dict], l
     try:
         graph = await asyncio.wait_for(run_load(), timeout=timeout_seconds)
     except Exception as exc:  # pragma: no cover - depends on external AuraDB state
-        _last_error = exc.__class__.__name__
+        _last_error[workspace] = exc.__class__.__name__
         return None
-    _last_error = None
+    _last_error[workspace] = None
     return graph
 
 
@@ -210,18 +220,20 @@ def neo4j_driver_initialized() -> bool:
 
 
 def neo4j_status() -> dict:
+    workspace = current_workspace()
     configured = neo4j_configured()
     driver_available = neo4j_driver_available()
     keepalive_enabled = configured and driver_available
-    adapter_active = bool(_last_sync_at and not _last_error)
+    adapter_active = bool(_last_sync_at[workspace] and not _last_error[workspace])
     return {
         "configured": configured,
         "driverAvailable": driver_available,
         "driverInitialized": neo4j_driver_initialized(),
         "keepAliveEnabled": keepalive_enabled,
         "adapterActive": adapter_active,
-        "lastSyncAt": _last_sync_at,
-        "lastError": _last_error,
+        "lastSyncAt": _last_sync_at[workspace],
+        "lastError": _last_error[workspace],
+        "workspace": workspace,
         "heartbeatIntervalMinutes": HEARTBEAT_INTERVAL_SECONDS // 60,
         "mode": "neo4j-aura" if adapter_active else "local-corpus-graph",
     }

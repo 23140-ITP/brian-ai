@@ -8,6 +8,7 @@ from pathlib import Path
 
 from llm.openrouter import extract_nameplate_tag as openrouter_extract_nameplate_tag
 from llm.openrouter import is_configured as openrouter_configured
+from workspace import is_demo_workspace
 
 
 TAG_RE = re.compile(rb"\b(?:P|HE|V|K|T)-\d+[A-Z]?\b", re.IGNORECASE)
@@ -48,7 +49,7 @@ def _extract_with_tesseract(content: bytes) -> str | None:
 
 def extract_tag_from_upload(filename: str, content: bytes, content_type: str = "image/jpeg") -> dict:
     filename_match = TAG_RE.search(filename.encode("utf-8", errors="ignore"))
-    if filename_match:
+    if filename_match and is_demo_workspace():
         return {"tag": filename_match.group(0).decode("ascii").upper(), "confidence": 0.92, "provider": "filename"}
 
     vision_result = openrouter_extract_nameplate_tag(filename, content, content_type)
@@ -64,7 +65,9 @@ def extract_tag_from_upload(filename: str, content: bytes, content_type: str = "
     if content_match:
         return {"tag": content_match.group(0).decode("ascii").upper(), "confidence": 0.86, "provider": "byte-pattern"}
 
-    return {"tag": "P-204B", "confidence": 0.64, "provider": "demo-fallback"}
+    if is_demo_workspace():
+        return {"tag": "P-204B", "confidence": 0.64, "provider": "demo-fallback"}
+    return {"tag": None, "confidence": 0.0, "provider": "not-detected"}
 
 
 def ocr_status() -> dict:
@@ -72,5 +75,5 @@ def ocr_status() -> dict:
     return {
         "visionConfigured": vision_configured,
         "tesseractAvailable": tesseract_available(),
-        "mode": "openrouter-vision" if vision_configured else "local-ocr-fallback",
+        "mode": "openrouter-vision" if vision_configured else "local-ocr-fallback" if is_demo_workspace() else "local-ocr",
     }

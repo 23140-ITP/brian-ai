@@ -22,7 +22,8 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useAppStore } from '@/store/appStore'
-import { dataMode } from '@/services/api'
+import { WorkspaceId, workspaceOptions } from '@/lib/workspace'
+import { getWriteToken } from '@/services/api'
 import { getNavigationItem } from './navigation'
 import { SearchCommand } from './SearchCommand'
 import { ThemeToggle } from './ThemeToggle'
@@ -36,8 +37,13 @@ const MODEL_OPTIONS = [
 export function AppHeader() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { model, setModel } = useAppStore()
+  const { model, setModel, workspace, setWorkspace } = useAppStore()
   const current = getNavigationItem(pathname)
+  const selectWorkspace = (value: string) => {
+    const next = value as WorkspaceId
+    setWorkspace(next)
+    if (next === 'live' && !getWriteToken()) navigate('/settings')
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b bg-background/92 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/78 md:px-6">
@@ -51,8 +57,20 @@ export function AppHeader() {
         <SearchCommand />
         <Badge variant="outline" className="hidden gap-1.5 lg:inline-flex">
           <CircleCheck data-icon="inline-start" />
-          {dataMode === 'live' ? 'Live backend' : 'Demo data'}
+          {workspace === 'live' ? 'Live data' : 'Demo data'}
         </Badge>
+        <Select value={workspace} onValueChange={selectWorkspace}>
+          <SelectTrigger className="min-w-28 sm:min-w-40" aria-label="Select workspace">
+            <SelectValue placeholder="Workspace" />
+          </SelectTrigger>
+          <SelectContent position="popper" align="end">
+            <SelectGroup>
+              {workspaceOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
         <Select value={model} onValueChange={setModel}>
           <SelectTrigger className="hidden min-w-36 sm:flex" aria-label="Select AI model">
             <SelectValue placeholder="Select model" />
@@ -72,12 +90,12 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon-sm" aria-label="Open workspace menu">
               <Avatar size="sm">
-                <AvatarFallback>BR</AvatarFallback>
+                <AvatarFallback>{workspace === 'live' ? 'LV' : 'DM'}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel>Bharat Refinery</DropdownMenuLabel>
+            <DropdownMenuLabel>{workspace === 'live' ? 'Live workspace' : 'Demo workspace'}</DropdownMenuLabel>
             <DropdownMenuGroup>
               <DropdownMenuItem onSelect={() => navigate('/settings')}>Settings</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => navigate('/field')}>Open Field Mode</DropdownMenuItem>

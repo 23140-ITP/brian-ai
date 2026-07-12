@@ -1,4 +1,4 @@
-import { BrainCircuit, ChevronsUpDown, CircleUserRound, LogOut, Settings } from 'lucide-react'
+import { BrainCircuit, Check, ChevronsUpDown, CircleUserRound, Database, FlaskConical, Settings } from 'lucide-react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -25,13 +25,22 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { navigationSections } from './navigation'
+import { WorkspaceId, workspaceOptions } from '@/lib/workspace'
+import { useAppStore } from '@/store/appStore'
+import { getWriteToken } from '@/services/api'
 
 export function AppSidebar() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { setOpenMobile } = useSidebar()
+  const { workspace, setWorkspace } = useAppStore()
 
   const closeMobileSidebar = () => setOpenMobile(false)
+  const selectWorkspace = (next: WorkspaceId) => {
+    setWorkspace(next)
+    closeMobileSidebar()
+    if (next === 'live' && !getWriteToken()) navigate('/settings')
+  }
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -84,17 +93,27 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
                   <Avatar size="sm">
-                    <AvatarFallback>BR</AvatarFallback>
+                    <AvatarFallback>{workspace === 'live' ? 'LV' : 'DM'}</AvatarFallback>
                   </Avatar>
                   <span className="grid min-w-0 flex-1 text-left leading-tight">
-                    <span className="truncate font-medium">Bharat Refinery</span>
-                    <span className="truncate text-xs text-muted-foreground">Jamnagar</span>
+                    <span className="truncate font-medium">{workspace === 'live' ? 'Live workspace' : 'Demo workspace'}</span>
+                    <span className="truncate text-xs text-muted-foreground">{workspace === 'live' ? 'Your evidence' : 'Seeded refinery data'}</span>
                   </span>
                   <ChevronsUpDown className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right" align="end" className="w-56">
                 <DropdownMenuLabel>Workspace</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  {workspaceOptions.map((option) => (
+                    <DropdownMenuItem key={option.value} onSelect={() => selectWorkspace(option.value as WorkspaceId)}>
+                      {option.value === 'live' ? <Database /> : <FlaskConical />}
+                      <span className="flex-1">{option.label}</span>
+                      {workspace === option.value && <Check />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     onSelect={() => {
@@ -113,13 +132,6 @@ export function AppSidebar() {
                   >
                     <CircleUserRound />
                     Field Mode
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem disabled>
-                    <LogOut />
-                    Local demo session
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>

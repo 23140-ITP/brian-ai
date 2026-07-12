@@ -10,12 +10,14 @@ class QueryRequest(BaseModel):
         "google/gemini-flash-1.5",
     ] = "openai/gpt-4o-mini"
     scope: Literal["rag", "compliance", "benchmark"] = "rag"
+    source_file: str | None = Field(default=None, max_length=255, pattern=r"^[^/\\]+$")
 
 
 class QueryResponse(BaseModel):
     answer: str
     citations: list[str]
     confidence: float
+    error: str | None = None
 
 
 class Alert(BaseModel):

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardAction,
@@ -74,21 +75,28 @@ function readinessBadgeVariant(status: ReadinessStatus) {
 }
 
 export function SettingsPage() {
-  const { model, setModel } = useAppStore()
+  const { model, setModel, workspace } = useAppStore()
+  const demo = workspace === 'demo'
   const [health, setHealth] = useState('checking')
   const [status, setStatus] = useState<SystemStatus | null>(null)
   const [writeToken, setWriteTokenValue] = useState(getWriteToken)
 
-  useEffect(() => {
+  const refreshStatus = () => {
+    setHealth('checking')
+    setStatus(null)
     api.health().then((result) => setHealth(result.status))
     api.systemStatus().then(setStatus)
-  }, [])
+  }
+
+  useEffect(() => {
+    refreshStatus()
+  }, [workspace])
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Demo configuration, model selection, and architecture status.</p>
+        <p className="text-sm text-muted-foreground">{demo ? 'Demo configuration, model selection, and architecture status.' : 'Live workspace configuration and provider status.'}</p>
       </header>
 
       <section aria-label="System configuration" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -154,10 +162,10 @@ export function SettingsPage() {
           description={status?.ocr?.visionConfigured
             ? 'OpenRouter vision is configured for nameplate reads.'
             : status?.ocr?.tesseractAvailable
-              ? 'Using local Tesseract OCR with deterministic tag fallback.'
-              : 'Using deterministic tag extraction until OpenRouter vision is enabled.'}
+              ? `Using local Tesseract OCR${demo ? ' with deterministic tag fallback' : ''}.`
+              : demo ? 'Using deterministic tag extraction until OpenRouter vision is enabled.' : 'Unreadable images return no equipment tag.'}
         />
-        <Card className="min-h-44">
+        {!demo ? <Card className="min-h-44">
           <CardHeader>
             <CardTitle>Write access</CardTitle>
           </CardHeader>
@@ -175,17 +183,20 @@ export function SettingsPage() {
                     setWriteToken(event.target.value)
                   }}
                 />
+                <Button type="button" variant="outline" onClick={refreshStatus}>Verify Live access</Button>
               </Field>
             </FieldGroup>
           </CardContent>
-        </Card>
+        </Card> : (
+          <StatusCard label="Write access" value="Read-only" description="The Demo workspace cannot modify its seeded evidence." />
+        )}
       </section>
 
       {status?.readiness && (
         <Card>
           <CardHeader>
             <CardDescription>Production readiness</CardDescription>
-            <CardTitle>{status.readiness.productionReady ? 'Ready for public submission' : 'Local demo ready, deployment steps remain'}</CardTitle>
+            <CardTitle>{status.readiness.productionReady ? 'Providers ready' : demo ? 'Demo ready, provider steps remain' : 'Live workspace setup remains'}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <p className="text-sm leading-relaxed text-muted-foreground">
@@ -212,7 +223,7 @@ export function SettingsPage() {
         </Card>
       )}
 
-      <Card>
+      {demo && <Card>
         <CardHeader>
           <CardDescription>Hackathon submission readiness</CardDescription>
           <CardTitle>Brian AI is packaged around the judging story.</CardTitle>
@@ -247,7 +258,7 @@ export function SettingsPage() {
             </Card>
           </div>
         </CardContent>
-      </Card>
+      </Card>}
     </div>
   )
 }

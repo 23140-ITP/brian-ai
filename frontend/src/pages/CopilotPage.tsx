@@ -34,19 +34,20 @@ type Message = {
 }
 
 export function CopilotPage() {
-  const { model, activeDocumentId, copilotDraftQuery, setActiveDocumentId, setCopilotDraftQuery } = useAppStore()
-  const [query, setQuery] = useState('What caused the P-204B seal failure?')
+  const { model, activeDocumentId, copilotDraftQuery, setActiveDocumentId, setCopilotDraftQuery, workspace } = useAppStore()
+  const demo = workspace === 'demo'
+  const [query, setQuery] = useState(demo ? 'What caused the P-204B seal failure?' : '')
   const [messages, setMessages] = useState<Message[]>([
     { id: 'welcome', role: 'assistant', content: 'Ask about equipment, compliance gaps, work orders, or procedures. Brian AI will answer with document citations.' }
   ])
-  const [library, setLibrary] = useState<DocumentMeta[]>(documents)
+  const [library, setLibrary] = useState<DocumentMeta[]>(demo ? documents : [])
   const [loading, setLoading] = useState(false)
   const [streamStatus, setStreamStatus] = useState<'idle' | 'streaming' | 'initializing'>('idle')
   const retryTimer = useRef<number | null>(null)
 
   useEffect(() => {
     api.documents().then(setLibrary)
-  }, [])
+  }, [workspace])
 
   useEffect(() => {
     if (!copilotDraftQuery) return
@@ -61,7 +62,6 @@ export function CopilotPage() {
   const runQuery = async (clean: string, retrying = false) => {
     if (!clean || (loading && !retrying)) return
     const selectedDocument = library.find((doc) => doc.id === activeDocumentId)
-    const scopedQuery = selectedDocument ? `${clean}\nContext document: ${selectedDocument.filename}` : clean
     const assistantId = `assistant-${Date.now()}`
     setMessages((rows) => [
       ...rows,
@@ -72,7 +72,7 @@ export function CopilotPage() {
     setLoading(true)
     setStreamStatus('streaming')
     await api.askStream(
-      scopedQuery,
+      clean,
       model,
       (token) => {
         setMessages((rows) => rows.map((message) => (
@@ -97,6 +97,16 @@ export function CopilotPage() {
           setStreamStatus('idle')
           return
         }
+        if (!demo) {
+          setMessages((rows) => rows.map((message) => (
+            message.id === assistantId
+              ? { ...message, content: 'No evidence is available in the Live workspace. Upload a document and retry.' }
+              : message
+          )))
+          setLoading(false)
+          setStreamStatus('idle')
+          return
+        }
         setStreamStatus('initializing')
         setMessages((rows) => rows.map((message) => (
           message.id === assistantId
@@ -112,7 +122,8 @@ export function CopilotPage() {
           setStreamStatus('idle')
           runQuery(clean, true)
         }, 30_000)
-      }
+      },
+      selectedDocument?.filename
     )
   }
 
@@ -122,6 +133,7 @@ export function CopilotPage() {
   }
 
   const latestMessage = messages[messages.length - 1]
+  const latestConfidence = latestMessage?.role === 'assistant' ? latestMessage.confidence : undefined
 
   return (
     <div className="grid items-start gap-4 xl:grid-cols-[17rem_minmax(0,1fr)_16rem]">
@@ -230,9 +242,9 @@ export function CopilotPage() {
           <CardTitle>Source confidence</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <strong className="text-3xl font-semibold">91%</strong>
-          <span className="text-sm text-muted-foreground">Top citations update after each answer.</span>
-          <Progress value={91} aria-label="Source confidence: 91%" />
+          <strong className="text-3xl font-semibold">{latestConfidence === undefined ? 'Not scored' : `${Math.round(latestConfidence * 100)}%`}</strong>
+          <span className="text-sm text-muted-foreground">Confidence is calculated from the evidence retrieved for the latest answer.</span>
+          <Progress value={(latestConfidence || 0) * 100} aria-label={latestConfidence === undefined ? 'Source confidence not scored' : `Source confidence: ${Math.round(latestConfidence * 100)}%`} />
         </CardContent>
       </Card>
     </div>

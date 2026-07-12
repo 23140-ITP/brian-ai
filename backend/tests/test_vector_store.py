@@ -38,8 +38,10 @@ class VectorStoreTests(unittest.TestCase):
 
             reopened = SQLiteVectorStore(path, "test-model", embed)
             matches = reopened.search("seal failure", limit=1)
+            scoped_matches = reopened.search("seal failure", limit=1, source_file="tank.txt")
 
         self.assertEqual([match.filename for match in matches], ["pump.txt"])
+        self.assertEqual([match.filename for match in scoped_matches], ["tank.txt"])
 
     def test_openrouter_embedding_rows_are_ordered_by_index(self) -> None:
         with (

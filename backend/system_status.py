@@ -5,6 +5,7 @@ from database import neo4j_status
 from llm.openrouter import is_configured as openrouter_configured
 from ocr.nameplate import ocr_status
 from vector_store import vector_stats
+from workspace import current_workspace, is_demo_workspace
 
 
 def _check(status_id: str, label: str, status: str, detail: str) -> dict:
@@ -38,6 +39,8 @@ def _readiness(settings, graph: dict, ocr: dict, rag_configured: bool, vectors: 
             "ready" if ocr.get("visionConfigured") else "local",
             "OpenRouter vision is configured for nameplate images."
             if ocr.get("visionConfigured")
+            else "Nameplate OCR uses local OCR and byte-pattern extraction. Unreadable Live images return no tag."
+            if not is_demo_workspace()
             else "Nameplate OCR falls back to filename, local OCR, byte-pattern, and demo extraction.",
         ),
         _check(
@@ -97,6 +100,8 @@ def provider_status() -> dict:
     vectors = vector_stats()
     return {
         "api": "ok",
+        "workspace": current_workspace(),
+        "readOnly": is_demo_workspace(),
         "rag": {
             "mode": "openrouter" if rag_configured else "local-lexical-rag",
             "openrouterConfigured": rag_configured,
