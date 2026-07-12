@@ -25,6 +25,7 @@ from system_status import provider_status
 from workspace import WorkspaceMiddleware, current_workspace
 
 settings = get_settings()
+APP_VERSION = "1.1.0"
 
 
 @asynccontextmanager
@@ -44,7 +45,7 @@ async def lifespan(_: FastAPI):
         await close_driver()
 
 
-app = FastAPI(title="Brian AI API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Brian AI API", version=APP_VERSION, lifespan=lifespan)
 app.add_middleware(WorkspaceMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -57,7 +58,7 @@ app.add_middleware(
 
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "ok", "version": "1.0.0", "workspace": current_workspace(), "corpus_docs": len(list_documents())}
+    return {"status": "ok", "version": APP_VERSION, "workspace": current_workspace(), "corpus_docs": len(list_documents())}
 
 
 @app.get("/api/system/status")
