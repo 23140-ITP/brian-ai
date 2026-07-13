@@ -84,6 +84,7 @@ class RequestGuardTests(unittest.TestCase):
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(duplicate.status_code, 409)
+            self.assertEqual(response.json()["impact_receipt"]["entities"][0]["id"], "P-204B")
             live_catalog = CorpusCatalog(Path(directory) / "workspaces" / "live" / "corpus")
             self.assertEqual(live_catalog.list_documents()[0]["filename"], "inspection.txt")
             self.assertEqual((Path(directory) / "workspaces" / "live" / "corpus" / "inspection.txt").read_bytes(), b"P-204B inspection evidence")

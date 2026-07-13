@@ -8,6 +8,7 @@ from pathlib import Path
 from corpus_search import read_text, refresh_corpus, split_chunks
 from ingestion.document_classifier import classify_document
 from ingestion.entity_extractor import extract_entities
+from impact_analysis import build_impact_receipt
 from pattern_detector import detect_alerts
 from vector_store import index_chunks
 from workspace import corpus_dir
@@ -46,16 +47,18 @@ def ingest_text(path: Path, text: str) -> dict:
     refresh_corpus()
     entities = extract_entities(text)
     alerts = detect_alerts()
-    return {
+    receipt = build_impact_receipt(path.name, text=text, entities=entities)
+    response = {
         "doc_id": path.name,
         "doc_type": classify_document(path.name),
         "chunks": len(chunks),
-        "entities": len(entities),
-        "alerts_triggered": len(alerts),
+        "entities": len(receipt["entities"]),
+        "alerts_triggered": len(receipt["alerts"]),
         "cache_hits": vector_result["cache_hits"],
         "vectors_indexed": vector_result["indexed"],
         "ingested_at": datetime.utcnow().isoformat() + "Z",
     }
+    return {**response, "impact_receipt": receipt}
 
 
 def ingest_path(path: Path) -> dict:
@@ -96,16 +99,18 @@ async def stream_save_and_ingest(filename: str, content: bytes):
     alerts = detect_alerts()
     yield {"event": "progress", "data": {"current": 5, "total": total, "step": INGEST_STEPS[4], "alerts": len(alerts)}}
 
+    receipt = build_impact_receipt(destination.name, text=text, entities=entities)
     response = {
         "doc_id": destination.name,
         "doc_type": classify_document(destination.name),
         "chunks": len(chunks),
-        "entities": len(entities),
-        "alerts_triggered": len(alerts),
+        "entities": len(receipt["entities"]),
+        "alerts_triggered": len(receipt["alerts"]),
         "cache_hits": vector_result["cache_hits"],
         "vectors_indexed": vector_result["indexed"],
         "ingested_at": datetime.utcnow().isoformat() + "Z",
     }
+    response["impact_receipt"] = receipt
     yield {"event": "done", "data": response}
 
 

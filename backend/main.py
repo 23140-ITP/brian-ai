@@ -6,12 +6,13 @@ from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from benchmark import load_benchmark_results, spot_check, stream_benchmark_events
+from benchmark import benchmark_summary, load_benchmark_results, spot_check, stream_benchmark_events
 from compliance.checker import compliance_events, compliance_results
 from config import get_settings
 from database import close_driver, create_schema, neo4j_keepalive_enabled, neo4j_keepalive_loop
 from corpus_catalog import list_documents, register_document
 from ingestion.pipeline import DocumentAlreadyExistsError, save_and_ingest, stream_save_and_ingest
+from impact_analysis import build_impact_receipt
 from knowledge_capture import capture_questions as get_capture_questions
 from knowledge_capture import ingest_expert_knowledge
 from knowledge_graph.service import completeness_score, graph_edges, graph_nodes, query_graph, refresh_graph_store
@@ -76,6 +77,14 @@ async def get_documents() -> list[dict]:
     return list_documents()
 
 
+@app.get("/api/documents/{filename}/impact")
+async def document_impact(filename: str) -> dict:
+    try:
+        return await asyncio.to_thread(build_impact_receipt, filename)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Document not found in this workspace.") from exc
+
+
 @app.get("/api/compliance/results")
 async def get_compliance() -> list[dict]:
     return compliance_results()
@@ -118,6 +127,11 @@ async def get_benchmark(request: Request):
     if "text/event-stream" in request.headers.get("accept", ""):
         return StreamingResponse(stream_benchmark_events(), media_type="text/event-stream")
     return load_benchmark_results()
+
+
+@app.get("/api/benchmark/summary")
+async def get_benchmark_summary() -> dict:
+    return benchmark_summary()
 
 
 @app.post("/api/benchmark/spot-check/{index}")

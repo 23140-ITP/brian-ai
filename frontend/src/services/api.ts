@@ -114,6 +114,44 @@ export type GraphPathRecord = {
   relationships: string[]
 }
 
+export type ImpactReceipt = {
+  document: { filename: string; docType: string }
+  entities: Array<{ type: string; id: string; confidence: number; properties: Record<string, string> }>
+  facts: string[]
+  graphChanges: {
+    relationshipsAdded: number
+    linkedNodes: Array<{ id: string; label: string; type: string }>
+    links: Array<{ source: string; target: string; relationship: string }>
+  }
+  alerts: Alert[]
+  complianceImpacts: Array<Pick<ComplianceRow, 'clauseId' | 'title' | 'status' | 'confidence' | 'remediation'>>
+  rca: {
+    hypotheses: Array<{ title: string; confidence: number; basis: string; evidence: string[]; classification: string }>
+    timeline: Array<{ filename: string; excerpt: string; isNewEvidence: boolean }>
+  }
+  recommendedActions: string[]
+  questionsUnlocked: string[]
+  provenance: { newEvidence: string; relatedSources: string[]; method: string }
+}
+
+export type BenchmarkSummary = {
+  suiteSize: number
+  questionAccuracy: number
+  averageLatencyS: number
+  adversarialAbstentions: number
+  entityExtraction: { fixtures: number; precision: number; recall: number; f1: number }
+  method: string
+}
+
+export type IngestResult = {
+  doc_id: string
+  chunks: number
+  entities: number
+  alerts_triggered: number
+  ingested_at?: string
+  impact_receipt: ImpactReceipt
+}
+
 async function getJson<T>(path: string, demoFallback: T, liveFallback: T): Promise<T> {
   const workspace = readWorkspace()
   if (dataMode === 'demo') {
@@ -169,8 +207,46 @@ async function streamBenchmarkRows(onRows?: (rows: BenchmarkResult[]) => void): 
   return rows
 }
 
-type IngestResult = { doc_id: string; chunks: number; entities: number; alerts_triggered: number; ingested_at?: string }
 type IngestProgress = { current: number; total: number; step: string }
+
+const demoImpactReceipt: ImpactReceipt = {
+  document: { filename: 'Incident-2023-07-15-P204B-Seal-Failure.pdf', docType: 'Incident Report' },
+  entities: [{ type: 'Equipment', id: 'P-204B', confidence: 0.98, properties: { tag: 'P-204B' } }],
+  facts: ['P-204B seal failure followed elevated vibration and delayed bearing replacement.'],
+  graphChanges: {
+    relationshipsAdded: 4,
+    linkedNodes: [
+      { id: 'P-204B', label: 'P-204B', type: 'Equipment' },
+      { id: 'OISD-116-4.2', label: 'OISD-116-4.2', type: 'Regulation' }
+    ],
+    links: [
+      { source: 'P-204B', target: 'Incident-2023-07-15-P204B-Seal-Failure.pdf', relationship: 'MENTIONED_IN' }
+    ]
+  },
+  alerts: alerts.filter((alert) => alert.tag === 'P-204B'),
+  complianceImpacts: complianceRows.filter((row) => row.clauseId === 'OISD-116-4.2'),
+  rca: {
+    hypotheses: [{
+      title: 'Recurring vibration-driven seal damage',
+      confidence: 0.86,
+      basis: 'The incident, vibration analysis, and work-order history independently connect elevated vibration, bearing wear, and seal damage.',
+      evidence: ['Incident-2023-07-15-P204B-Seal-Failure.pdf', 'Pump-P204-Vibration-Analysis-2024.pdf', 'work-orders-2022-2024.csv'],
+      classification: 'inference'
+    }],
+    timeline: [
+      { filename: 'work-orders-2022-2024.csv', excerpt: 'January 2022 work order records an earlier P-204B seal event.', isNewEvidence: false },
+      { filename: 'Incident-2023-07-15-P204B-Seal-Failure.pdf', excerpt: 'July 2023 incident records elevated vibration before seal failure.', isNewEvidence: true },
+      { filename: 'Pump-P204-Vibration-Analysis-2024.pdf', excerpt: 'Vibration analysis recommends bearing inspection and alignment verification.', isNewEvidence: false }
+    ]
+  },
+  recommendedActions: ['Inspect bearings and verify shaft alignment.', 'Pre-stage the approved seal kit.', 'Attach completed evidence to the OISD review record.'],
+  questionsUnlocked: ['What changed for P-204B after the July 2023 incident?'],
+  provenance: {
+    newEvidence: 'Incident-2023-07-15-P204B-Seal-Failure.pdf',
+    relatedSources: ['Pump-P204-Vibration-Analysis-2024.pdf', 'work-orders-2022-2024.csv'],
+    method: 'Deterministic entity extraction, corpus retrieval, graph linkage, and rule-based hypothesis ranking'
+  }
+}
 
 export const api = {
   health: () => getJson('/health', { status: 'local demo', version: '1.0.0' }, { status: 'unavailable', version: '1.0.0' }),
@@ -204,6 +280,21 @@ export const api = {
   }),
   alerts: () => getJson<Alert[]>('/api/alerts', alerts, []),
   documents: () => getJson<DocumentMeta[]>('/api/documents', documents, []),
+  impactReceipt: async (filename: string) => {
+    const workspace = readWorkspace()
+    if (dataMode === 'demo') {
+      if (workspace === 'demo') return demoImpactReceipt
+      reportFailure(`/api/documents/${encodeURIComponent(filename)}/impact`)
+      throw new Error('Live impact analysis requires the backend service.')
+    }
+
+    const response = await fetch(`${API_BASE}/api/documents/${encodeURIComponent(filename)}/impact`, { headers: requestHeaders() })
+    if (!response.ok) {
+      reportFailure(`/api/documents/${encodeURIComponent(filename)}/impact`)
+      throw new Error(response.status === 404 ? 'Document impact is not available.' : response.statusText)
+    }
+    return (await response.json()) as ImpactReceipt
+  },
   compliance: () => getJson<ComplianceRow[]>('/api/compliance/results', complianceRows, []),
   runComplianceCheck: async (
     onProgress: (current: number, total: number) => void,
@@ -322,6 +413,21 @@ export const api = {
       return rows
     }
   },
+  benchmarkSummary: () => getJson<BenchmarkSummary>('/api/benchmark/summary', {
+    suiteSize: benchmarkResults.length,
+    questionAccuracy: benchmarkResults.filter((row) => row.correct).length / benchmarkResults.length,
+    averageLatencyS: benchmarkResults.reduce((sum, row) => sum + row.latencyS, 0) / benchmarkResults.length,
+    adversarialAbstentions: 5,
+    entityExtraction: { fixtures: 3, precision: 1, recall: 1, f1: 1 },
+    method: 'Labelled cached QA plus deterministic entity-extraction fixtures; live rows can be spot-checked independently.'
+  }, {
+    suiteSize: 0,
+    questionAccuracy: 0,
+    averageLatencyS: 0,
+    adversarialAbstentions: 0,
+    entityExtraction: { fixtures: 0, precision: 0, recall: 0, f1: 0 },
+    method: 'No live benchmark suite is configured.'
+  }),
   benchmarkSpotCheck: async (index: number) => {
     const response = await fetch(`${API_BASE}/api/benchmark/spot-check/${index}`, { method: 'POST', headers: requestHeaders() })
     if (!response.ok) throw new Error(response.statusText)

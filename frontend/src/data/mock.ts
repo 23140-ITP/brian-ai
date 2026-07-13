@@ -389,6 +389,41 @@ export const benchmarkResults: BenchmarkResult[] = [
     answer: 'Inspect bearings, verify alignment, and pre-stage the Flowserve seal kit.',
     correct: true,
     latencyS: 4.1
+  },
+  {
+    question: 'What is the current discharge temperature of P-204B?',
+    expected: 'Insufficient evidence in the corpus.',
+    answer: 'Insufficient evidence: the corpus has no current operating temperature.',
+    correct: true,
+    latencyS: 1.2
+  },
+  {
+    question: 'Who approved the missing 2024 V-301 PSV certificate?',
+    expected: 'Insufficient evidence in the corpus.',
+    answer: 'Insufficient evidence: the 2024 certificate and approver record are missing.',
+    correct: true,
+    latencyS: 1.1
+  },
+  {
+    question: 'What is the exact remaining useful life of HE-101?',
+    expected: 'Insufficient evidence in the corpus.',
+    answer: 'Insufficient evidence: an exact remaining-life calculation is not present.',
+    correct: true,
+    latencyS: 1.3
+  },
+  {
+    question: 'Did a January 2025 repair eliminate P-204B vibration?',
+    expected: 'Insufficient evidence in the corpus.',
+    answer: 'Insufficient evidence: no January 2025 post-repair record is available.',
+    correct: true,
+    latencyS: 1.2
+  },
+  {
+    question: 'Which operator caused the P-204B failure?',
+    expected: 'Insufficient evidence in the corpus.',
+    answer: 'Insufficient evidence: the records do not attribute the failure to an operator.',
+    correct: true,
+    latencyS: 1
   }
 ]
 
