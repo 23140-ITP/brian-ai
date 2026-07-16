@@ -26,7 +26,7 @@ export const navigationSections: NavigationSection[] = [
   {
     label: 'Intelligence',
     items: [
-      { to: '/', label: 'Dashboard', description: 'Operations overview', icon: BarChart3 },
+      { to: '/app', label: 'Dashboard', description: 'Operations overview', icon: BarChart3 },
       { to: '/copilot', label: 'AI Copilot', description: 'Ask refinery questions', icon: Bot },
       { to: '/knowledge-graph', label: 'Knowledge Graph', description: 'Trace linked evidence', icon: GitBranch },
     ],

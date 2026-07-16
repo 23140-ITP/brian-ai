@@ -1,6 +1,6 @@
-const CACHE_NAME = 'brian-ai-field-v4-shadcn-admin'
+const CACHE_NAME = 'brian-ai-field-v5-public-site'
 const API_CACHE_NAME = 'brian-ai-api-v1'
-const SHELL = ['/', '/index.html', '/field', '/manifest.json', '/favicon.svg', '/icon-192.png', '/icon-512.png']
+const SHELL = ['/', '/app', '/index.html', '/field', '/manifest.json', '/favicon.svg', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL)))
@@ -59,7 +59,7 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(async () => (
           (await caches.match(request)) ||
-          (await caches.match('/field')) ||
+          (await caches.match('/app')) ||
           (await caches.match('/index.html')) ||
           Response.error()
         ))

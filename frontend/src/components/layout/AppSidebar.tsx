@@ -48,7 +48,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="Brian AI">
-              <NavLink to="/" onClick={closeMobileSidebar}>
+              <NavLink to="/app" onClick={closeMobileSidebar}>
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <BrainCircuit />
                 </span>
@@ -74,7 +74,7 @@ export function AppSidebar() {
                       isActive={pathname === to}
                       tooltip={label}
                     >
-                      <NavLink to={to} end={to === '/'} onClick={closeMobileSidebar}>
+                      <NavLink to={to} end={to === '/app'} onClick={closeMobileSidebar}>
                         <Icon />
                         <span>{label}</span>
                       </NavLink>

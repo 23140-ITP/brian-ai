@@ -4,6 +4,7 @@ import { Layout } from './components/layout/Layout'
 import { PageErrorBoundary } from './components/PageErrorBoundary'
 import { Card, CardContent, CardHeader } from './components/ui/card'
 import { Skeleton } from './components/ui/skeleton'
+import { LandingPage } from './pages/LandingPage'
 
 const CompliancePage = lazy(() => import('./pages/CompliancePage').then((module) => ({ default: module.CompliancePage })))
 const CopilotPage = lazy(() => import('./pages/CopilotPage').then((module) => ({ default: module.CopilotPage })))
@@ -41,8 +42,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route element={<Layout />}>
-          <Route path="/" element={withBoundary('Dashboard', <DashboardPage />)} />
+          <Route path="/app" element={withBoundary('Dashboard', <DashboardPage />)} />
           <Route path="/copilot" element={withBoundary('AI Copilot', <CopilotPage />)} />
           <Route path="/knowledge-graph" element={withBoundary('Knowledge Graph', <KnowledgeGraphPage />)} />
           <Route path="/compliance" element={withBoundary('Compliance', <CompliancePage />)} />
