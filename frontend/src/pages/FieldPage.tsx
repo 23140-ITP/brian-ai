@@ -153,7 +153,7 @@ export function FieldPage() {
   }
 
   const queryTag = async (equipmentTag: string, lead: string) => {
-    const result = await api.ask(`${lead} ${equipmentTag} current risk and next action`, 'openai/gpt-4o-mini')
+    const result = await api.ask(`${lead} ${equipmentTag} current risk and next action`, 'openrouter/free')
     setAnswer(result.answer)
     cacheFieldAnswer(equipmentTag, result.answer)
   }
@@ -171,7 +171,7 @@ export function FieldPage() {
       const detectedTag = ocr.tag
       setTag(detectedTag)
       setManualTag(detectedTag)
-      const result = await api.ask(`Field scan ${detectedTag} current risk and next action`, 'openai/gpt-4o-mini')
+      const result = await api.ask(`Field scan ${detectedTag} current risk and next action`, 'openrouter/free')
       const fieldAnswer = `OCR confidence ${(ocr.confidence * 100).toFixed(0)}%. ${result.answer}`
       setAnswer(fieldAnswer)
       cacheFieldAnswer(detectedTag, fieldAnswer)

@@ -11,12 +11,18 @@ from config import get_settings
 TAG_RE = re.compile(r"\b(?:P|HE|V|K|T)-\d+[A-Z]?\b", re.IGNORECASE)
 
 
-def is_configured() -> bool:
+def is_configured(model: str = "openrouter/free") -> bool:
     settings = get_settings()
-    return bool(settings.openrouter_api_key and settings.use_openrouter)
+    return bool(settings.openrouter_api_key and settings.use_openrouter and is_free_model(model))
+
+
+def is_free_model(model: object) -> bool:
+    return isinstance(model, str) and (model == "openrouter/free" or model.endswith(":free"))
 
 
 def _request(path: str, payload: dict, timeout: int) -> dict | None:
+    if not is_free_model(payload.get("model")):
+        return None
     settings = get_settings()
     request = urllib.request.Request(
         f"{settings.openrouter_base_url.rstrip('/')}/{path.lstrip('/')}",
@@ -37,7 +43,7 @@ def _request(path: str, payload: dict, timeout: int) -> dict | None:
 
 
 def generate_answer(query: str, context: str, model: str) -> str | None:
-    if not is_configured():
+    if not is_configured(model):
         return None
 
     settings = get_settings()
@@ -68,10 +74,9 @@ def generate_answer(query: str, context: str, model: str) -> str | None:
 
 
 def extract_nameplate_tag(filename: str, content: bytes, mime_type: str = "image/jpeg") -> tuple[str | None, float] | None:
-    if not is_configured():
-        return None
-
     settings = get_settings()
+    if not is_configured(settings.openrouter_vision_model):
+        return None
     payload = {
         "model": settings.openrouter_vision_model,
         "messages": [
@@ -113,9 +118,11 @@ def extract_nameplate_tag(filename: str, content: bytes, mime_type: str = "image
 
 
 def generate_embeddings(texts: list[str]) -> list[list[float]] | None:
-    if not texts or not is_configured():
+    if not texts:
         return None
     settings = get_settings()
+    if not is_configured(settings.openrouter_embedding_model):
+        return None
     data = _request(
         "embeddings",
         {"model": settings.openrouter_embedding_model, "input": texts},

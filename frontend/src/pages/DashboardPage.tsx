@@ -114,7 +114,7 @@ export function DashboardPage() {
     const start = performance.now()
     try {
       const question = demo ? 'What caused the P-204B seal failure?' : 'Summarize the strongest operational evidence in this workspace.'
-      const result = await api.ask(question, 'openai/gpt-4o-mini')
+      const result = await api.ask(question, 'openrouter/free')
       setProveIt(`${((performance.now() - start) / 1000).toFixed(1)}s: ${result.answer.slice(0, 96)}...`)
     } catch {
       setProveIt('Live backend unavailable. No demo answer was substituted.')

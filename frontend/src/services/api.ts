@@ -254,7 +254,7 @@ export const api = {
     api: 'local demo',
     rag: { mode: 'local-lexical-rag', openrouterConfigured: false, modelRouting: 'enabled' },
     graph: { configured: false, driverAvailable: false, driverInitialized: false, keepAliveEnabled: false, heartbeatIntervalMinutes: 60, mode: 'local-corpus-graph' },
-    index: { mode: 'lexical-fallback', vectorPath: 'data/vectors.db', cache: { chunks: 0, files: 0, path: 'data/vectors.db', model: 'openai/text-embedding-3-small' } },
+    index: { mode: 'lexical-fallback', vectorPath: 'data/vectors.db', cache: { chunks: 0, files: 0, path: 'data/vectors.db', model: '' } },
     ocr: { mode: 'local-ocr-fallback', visionConfigured: false, tesseractAvailable: false },
     deployment: { environment: 'development', corsOrigins: ['http://localhost:5173'], frontendPublicUrl: '', backendPublicUrl: '' },
     readiness: {

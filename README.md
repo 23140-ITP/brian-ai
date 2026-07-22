@@ -222,8 +222,8 @@ BRIAN_AI_DATA_DIR=/data
 BRIAN_AI_WRITE_TOKEN=replace-with-a-long-random-token
 BRIAN_AI_USE_OPENROUTER=1
 OPENROUTER_API_KEY=replace-with-your-openrouter-key
-OPENROUTER_EMBEDDING_MODEL=openai/text-embedding-3-small
-OPENROUTER_VISION_MODEL=google/gemini-2.5-flash
+OPENROUTER_EMBEDDING_MODEL=
+OPENROUTER_VISION_MODEL=openrouter/free
 NEO4J_URI=neo4j+s://your-instance.databases.neo4j.io
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=replace-with-your-neo4j-password
@@ -233,6 +233,8 @@ BACKEND_PUBLIC_URL=https://your-backend.example
 ```
 
 Set `VITE_API_URL` to the public backend URL during the frontend build. Then open `/settings` and verify every production-readiness check.
+
+Brian AI only submits `openrouter/free` or explicit `:free` model variants. Paid model IDs are rejected by the backend. Leaving `OPENROUTER_EMBEDDING_MODEL` empty keeps retrieval on the built-in lexical fallback instead of calling a paid embedding model.
 
 ## Verification
 

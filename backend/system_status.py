@@ -21,7 +21,7 @@ def _public_cors_ready(origins: list[str]) -> bool:
 def _readiness(settings, graph: dict, ocr: dict, rag_configured: bool, vectors: dict) -> dict:
     cors_ready = _public_cors_ready(settings.cors_origins)
     public_links_ready = bool(settings.frontend_public_url and settings.backend_public_url)
-    vector_ready = rag_configured and vectors["chunks"] > 0
+    vector_ready = openrouter_configured(vectors["model"]) and vectors["chunks"] > 0
     write_access_ready = bool(settings.write_token) if settings.environment.lower() == "production" else True
 
     checks = [
@@ -109,7 +109,7 @@ def provider_status() -> dict:
         },
         "graph": graph,
         "index": {
-            "mode": "openrouter-sqlite-vector" if rag_configured and vectors["chunks"] else "lexical-fallback",
+            "mode": "openrouter-sqlite-vector" if openrouter_configured(vectors["model"]) and vectors["chunks"] else "lexical-fallback",
             "vectorPath": vectors["path"],
             "cache": vectors,
         },

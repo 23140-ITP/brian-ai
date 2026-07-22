@@ -10,7 +10,7 @@ from workspace import is_demo_workspace
 ERR_EMPTY_KB = "ERR_EMPTY_KB"
 
 
-def run_query(query: str, model: str = "openai/gpt-4o-mini", scope: str = "rag", source_file: str | None = None) -> dict:
+def run_query(query: str, model: str = "openrouter/free", scope: str = "rag", source_file: str | None = None) -> dict:
     if not load_corpus():
         return {
             "answer": "No documents are available in this workspace. Upload evidence and retry.",

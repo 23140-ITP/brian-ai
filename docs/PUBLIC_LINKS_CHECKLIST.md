@@ -20,7 +20,8 @@ Use this checklist before submitting Brian AI to the ET AI Hackathon portal.
    ```text
    OPENROUTER_API_KEY=sk-or-...
    BRIAN_AI_USE_OPENROUTER=1
-   OPENROUTER_VISION_MODEL=google/gemini-2.5-flash
+   OPENROUTER_VISION_MODEL=openrouter/free
+   OPENROUTER_EMBEDDING_MODEL=
    NEO4J_URI=neo4j+s://xxxx.databases.neo4j.io
    NEO4J_USER=neo4j
    NEO4J_PASSWORD=...

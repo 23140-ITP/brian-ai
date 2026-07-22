@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from config import get_settings
 from llm.openrouter import extract_nameplate_tag as openrouter_extract_nameplate_tag
 from llm.openrouter import is_configured as openrouter_configured
 from workspace import is_demo_workspace
@@ -71,7 +72,7 @@ def extract_tag_from_upload(filename: str, content: bytes, content_type: str = "
 
 
 def ocr_status() -> dict:
-    vision_configured = openrouter_configured()
+    vision_configured = openrouter_configured(get_settings().openrouter_vision_model)
     return {
         "visionConfigured": vision_configured,
         "tesseractAvailable": tesseract_available(),

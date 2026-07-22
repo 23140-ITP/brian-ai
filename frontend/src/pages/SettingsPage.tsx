@@ -41,9 +41,7 @@ const submissionArtifacts = [
 ]
 
 const MODEL_OPTIONS = [
-  { value: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
-  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude Sonnet' },
-  { value: 'google/gemini-flash-1.5', label: 'Gemini Flash' }
+  { value: 'openrouter/free', label: 'OpenRouter Free' }
 ]
 
 type StatusCardProps = {
