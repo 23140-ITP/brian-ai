@@ -27,7 +27,7 @@ This audit records the verified local and public build as of 2026-07-22.
 - All React routes are wrapped in page-level error boundaries with a friendly retry view instead of a white-screen failure.
 - Neo4j production path has an optional async driver singleton, schema constraints, FastAPI lifespan cleanup, and a 60-minute AuraDB heartbeat task that no-ops safely without credentials.
 - Railway Docker startup now runs `/startup.sh`, which seeds `/data/corpus`, the benchmark cache, and the SQLite vector cache on a fresh persistent volume.
-- Generated PowerPoint pitch deck and rendered slide previews.
+- Generated 10-page image-only PDF pitch deck.
 - Generated 233-second narrated 720p demo video at `docs/Brian_AI_demo_video.mp4`, with H.264 video and AAC audio tracks.
 - Demo video script exists at `docs/DEMO_VIDEO_SCRIPT.md` and maps the app routes to a five-minute recording flow.
 - Public links checklist exists at `docs/PUBLIC_LINKS_CHECKLIST.md` and covers Railway backend, Vercel frontend, pitch deck, and demo video URL handoff.

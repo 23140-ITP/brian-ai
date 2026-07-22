@@ -79,7 +79,7 @@ Dedicated recording script: `docs/DEMO_VIDEO_SCRIPT.md`.
 
 Generated deck:
 
-- PowerPoint: `docs/Brian_AI_pitch_deck.pptx`
+- PDF: `docs/Brian_AI_pitch_deck.pdf`
 - Narrated demo video: `docs/Brian_AI_demo_video.mp4`
 - Local rendered preview PNGs (generated, not committed): `docs/pitch-deck-preview-final/`
 - Demo video script: `docs/DEMO_VIDEO_SCRIPT.md`

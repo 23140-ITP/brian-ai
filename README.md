@@ -6,7 +6,7 @@ Live app: https://brian-ai-app.vercel.app
 
 ## Submission Artifacts
 
-- [Pitch deck](docs/Brian_AI_pitch_deck.pptx)
+- [Pitch deck](docs/Brian_AI_pitch_deck.pdf)
 - [Narrated demo video](docs/Brian_AI_demo_video.mp4)
 - [Demo video script](docs/DEMO_VIDEO_SCRIPT.md)
 - [Public links checklist](docs/PUBLIC_LINKS_CHECKLIST.md)

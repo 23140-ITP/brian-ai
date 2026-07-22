@@ -33,7 +33,7 @@ const judgingCriteria = [
 
 const submissionArtifacts = [
   { label: 'Working prototype', value: 'Open Brian AI', href: 'https://brian-ai-app.vercel.app' },
-  { label: 'Pitch deck', value: 'Open pitch deck', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_pitch_deck.pptx' },
+  { label: 'Pitch deck', value: 'Open pitch deck', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_pitch_deck.pdf' },
   { label: 'Demo video', value: 'Watch narrated demo', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_demo_video.mp4' },
   { label: 'Demo video script', value: 'Open recording script', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/DEMO_VIDEO_SCRIPT.md' },
   { label: 'Public links checklist', value: 'Open checklist', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/PUBLIC_LINKS_CHECKLIST.md' },
