@@ -20,6 +20,8 @@ async def _graph() -> tuple[list[dict], list[dict]]:
 
 async def refresh_graph_store() -> bool:
     nodes, edges = build_graph()
+    if not nodes and not is_demo_workspace():
+        return False
     return await sync_graph_store(nodes, edges)
 
 

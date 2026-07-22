@@ -12,7 +12,8 @@ sys.path.insert(0, str(BACKEND))
 
 import database  # noqa: E402
 import main  # noqa: E402
-from workspace import current_workspace  # noqa: E402
+from knowledge_graph import service as graph_service  # noqa: E402
+from workspace import current_workspace, reset_workspace, set_workspace  # noqa: E402
 
 
 class FakeResult:
@@ -60,6 +61,18 @@ class FakeDriver:
 
 
 class Neo4jAdapterTests(unittest.IsolatedAsyncioTestCase):
+    async def test_empty_live_graph_does_not_delete_persisted_store(self) -> None:
+        token = set_workspace("live")
+        try:
+            with (
+                patch.object(graph_service, "build_graph", return_value=([], [])),
+                patch.object(graph_service, "sync_graph_store", new=AsyncMock(return_value=True)) as sync,
+            ):
+                self.assertFalse(await graph_service.refresh_graph_store())
+                sync.assert_not_awaited()
+        finally:
+            reset_workspace(token)
+
     async def test_startup_syncs_demo_and_live_workspaces(self) -> None:
         synced_workspaces: list[str] = []
 

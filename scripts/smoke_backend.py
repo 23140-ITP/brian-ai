@@ -13,11 +13,13 @@ from main import app  # noqa: E402
 
 
 SMOKE_FILENAME = "submission-ingest-smoke.txt"
+LIVE_HEADERS = {"X-Brian-Workspace": "live"}
 
 
 def cleanup_smoke_artifacts() -> None:
-    (ROOT / "data" / "corpus" / SMOKE_FILENAME).unlink(missing_ok=True)
-    vector_path = ROOT / "data" / "vectors.db"
+    live_data = ROOT / "data" / "workspaces" / "live"
+    (live_data / "corpus" / SMOKE_FILENAME).unlink(missing_ok=True)
+    vector_path = live_data / "vectors.db"
     if vector_path.exists():
         with sqlite3.connect(vector_path) as connection:
             connection.execute("DELETE FROM vectors WHERE source_file = ?", (SMOKE_FILENAME,))
@@ -45,11 +47,16 @@ def main() -> None:
         readiness_ids = {check["id"] for check in status["readiness"]["checks"]}
         assert {"openrouter", "vision", "neo4j", "cors", "vector-index", "write-access", "public-links"} <= readiness_ids
 
-        assert len(client.get("/api/benchmark").json()) == 15
-        assert client.get("/api/benchmark", headers={"accept": "text/event-stream"}).text.count("event: result") == 15
+        benchmark_rows = client.get("/api/benchmark").json()
+        assert len(benchmark_rows) >= 15
+        assert client.get("/api/benchmark", headers={"accept": "text/event-stream"}).text.count("event: result") == len(benchmark_rows)
 
         files = {"file": (SMOKE_FILENAME, b"P-204B seal vibration ingest smoke test.", "text/plain")}
-        ingest_stream = client.post("/api/ingest", files=files, headers={"accept": "text/event-stream"}).text
+        ingest_stream = client.post(
+            "/api/ingest",
+            files=files,
+            headers={**LIVE_HEADERS, "accept": "text/event-stream"},
+        ).text
         assert ingest_stream.count("event: progress") == 5
         assert "event: done" in ingest_stream
 

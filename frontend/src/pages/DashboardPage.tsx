@@ -114,7 +114,7 @@ export function DashboardPage() {
     const start = performance.now()
     try {
       const question = demo ? 'What caused the P-204B seal failure?' : 'Summarize the strongest operational evidence in this workspace.'
-      const result = await api.ask(question, 'openai/gpt-4o-mini')
+      const result = await api.ask(question, 'openrouter/free')
       setProveIt(`${((performance.now() - start) / 1000).toFixed(1)}s: ${result.answer.slice(0, 96)}...`)
     } catch {
       setProveIt('Live backend unavailable. No demo answer was substituted.')
@@ -156,14 +156,14 @@ export function DashboardPage() {
       </section>
 
       {primaryAlert ? (
-        <Alert variant="destructive" className="has-data-[slot=alert-action]:pr-2 sm:has-data-[slot=alert-action]:pr-18">
+        <Alert variant="destructive" className="grid-cols-[auto_minmax(0,1fr)] pr-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
           <Activity aria-hidden="true" />
           <AlertTitle>Failure Alerts</AlertTitle>
           <AlertDescription>
             <span className="font-medium text-foreground">{primaryAlert.tag}: {primaryAlert.message}</span>
             <span className="block">{primaryAlert.evidence}</span>
           </AlertDescription>
-          <AlertAction className="static col-span-full mt-2 justify-self-start sm:absolute sm:mt-0">
+          <AlertAction className="static col-span-1 col-start-2 row-start-3 mt-2 justify-self-start sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:ml-4 sm:mt-0 sm:self-start">
             <Button type="button" size="sm" variant="outline" onClick={() => navigate('/compliance')}>
               Open evidence
             </Button>

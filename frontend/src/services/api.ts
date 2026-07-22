@@ -161,9 +161,10 @@ export type IngestResult = {
 
 async function getJson<T>(path: string, demoFallback: T, liveFallback: T): Promise<T> {
   const workspace = readWorkspace()
+  if (workspace === 'demo') return demoFallback
   if (dataMode === 'demo') {
-    if (workspace === 'live') reportFailure(path)
-    return workspace === 'demo' ? demoFallback : liveFallback
+    reportFailure(path)
+    return liveFallback
   }
 
   if (workspace === 'live' && !getWriteToken()) {
@@ -175,22 +176,25 @@ async function getJson<T>(path: string, demoFallback: T, liveFallback: T): Promi
     const response = await fetch(`${API_BASE}${path}`, { headers: requestHeaders() })
     if (!response.ok) {
       reportFailure(path, response.status === 401 ? LIVE_ACCESS_REQUIRED : undefined)
-      return workspace === 'demo' ? demoFallback : liveFallback
+      return liveFallback
     }
     const result = (await response.json()) as T
     reportSuccess()
     return result
   } catch {
     reportFailure(path)
-    return workspace === 'demo' ? demoFallback : liveFallback
+    return liveFallback
   }
 }
 
 async function streamBenchmarkRows(onRows?: (rows: BenchmarkResult[]) => void): Promise<BenchmarkResult[]> {
+  if (readWorkspace() === 'demo') {
+    onRows?.(benchmarkResults)
+    return benchmarkResults
+  }
   if (dataMode === 'demo') {
-    const rows = readWorkspace() === 'demo' ? benchmarkResults : []
-    onRows?.(rows)
-    return rows
+    onRows?.([])
+    return []
   }
 
   if (readWorkspace() === 'live' && !getWriteToken()) {
@@ -278,7 +282,7 @@ export const api = {
     api: 'local demo',
     rag: { mode: 'local-lexical-rag', openrouterConfigured: false, modelRouting: 'enabled' },
     graph: { configured: false, driverAvailable: false, driverInitialized: false, keepAliveEnabled: false, heartbeatIntervalMinutes: 60, mode: 'local-corpus-graph' },
-    index: { mode: 'lexical-fallback', vectorPath: 'data/vectors.db', cache: { chunks: 0, files: 0, path: 'data/vectors.db', model: 'openai/text-embedding-3-small' } },
+    index: { mode: 'lexical-fallback', vectorPath: 'data/vectors.db', cache: { chunks: 0, files: 0, path: 'data/vectors.db', model: '' } },
     ocr: { mode: 'local-ocr-fallback', visionConfigured: false, tesseractAvailable: false },
     deployment: { environment: 'development', corsOrigins: ['http://localhost:5173'], frontendPublicUrl: '', backendPublicUrl: '' },
     readiness: {
@@ -306,8 +310,8 @@ export const api = {
   documents: () => getJson<DocumentMeta[]>('/api/documents', documents, []),
   impactReceipt: async (filename: string) => {
     const workspace = readWorkspace()
+    if (workspace === 'demo') return demoImpactReceipt
     if (dataMode === 'demo') {
-      if (workspace === 'demo') return demoImpactReceipt
       reportFailure(`/api/documents/${encodeURIComponent(filename)}/impact`)
       throw new Error('Live impact analysis requires the backend service.')
     }
@@ -324,14 +328,14 @@ export const api = {
     onProgress: (current: number, total: number) => void,
     onClause: (row: ComplianceRow) => void
   ) => {
-    if (dataMode === 'demo') {
-      if (readWorkspace() === 'live') throw new Error('Live backend unavailable')
+    if (readWorkspace() === 'demo') {
       complianceRows.forEach((row, index) => {
         onProgress(index + 1, complianceRows.length)
         onClause(row)
       })
       return
     }
+    if (dataMode === 'demo') throw new Error('Live backend unavailable')
 
     try {
       const response = await fetch(`${API_BASE}/api/compliance/check`, { headers: requestHeaders() })
@@ -536,7 +540,7 @@ export const api = {
   ask: async (query: string, model: string, sourceFile?: string) => {
     const lower = query.toLowerCase()
     const key = lower.includes('p-204') || lower.includes('seal') ? 'p204' : lower.includes('oisd') ? 'oisd' : lower.includes('v-301') ? 'v301' : 'default'
-    if (dataMode === 'demo' && readWorkspace() === 'demo') {
+    if (readWorkspace() === 'demo') {
       return {
         answer: answerTemplates[key],
         citations: key === 'oisd'
@@ -574,7 +578,7 @@ export const api = {
     onError?: (error: string) => void,
     sourceFile?: string
   ) => {
-    if (dataMode === 'demo' && readWorkspace() === 'demo') {
+    if (readWorkspace() === 'demo') {
       const fallback = await api.ask(query, model, sourceFile)
       onToken(fallback.answer)
       onDone({ citations: fallback.citations, confidence: fallback.confidence })

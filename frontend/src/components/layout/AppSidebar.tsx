@@ -22,6 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
 import { navigationSections } from './navigation'
@@ -32,7 +33,7 @@ import { getWriteToken } from '@/services/api'
 export function AppSidebar() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { setOpenMobile } = useSidebar()
+  const { isMobile, setOpenMobile, state } = useSidebar()
   const { workspace, setWorkspace } = useAppStore()
 
   const closeMobileSidebar = () => setOpenMobile(false)
@@ -44,22 +45,25 @@ export function AppSidebar() {
 
   return (
     <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild tooltip="Brian AI">
-              <NavLink to="/app" onClick={closeMobileSidebar}>
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <BrainCircuit />
-                </span>
-                <span className="grid min-w-0 flex-1 text-left leading-tight">
-                  <span className="truncate font-semibold">Brian AI</span>
-                  <span className="truncate text-xs text-muted-foreground">Bharat Refinery</span>
-                </span>
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="flex-row items-center gap-1">
+        {(state === 'expanded' || isMobile) && (
+          <SidebarMenu className="min-w-0 flex-1">
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" asChild tooltip="Brian AI">
+                <NavLink to="/app" onClick={closeMobileSidebar}>
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    <BrainCircuit />
+                  </span>
+                  <span className="grid min-w-0 flex-1 text-left leading-tight">
+                    <span className="truncate font-semibold">Brian AI</span>
+                    <span className="truncate text-xs text-muted-foreground">Bharat Refinery</span>
+                  </span>
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
+        <SidebarTrigger className="ml-auto shrink-0" />
       </SidebarHeader>
       <SidebarContent>
         {navigationSections.map((section) => (

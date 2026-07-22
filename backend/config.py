@@ -18,8 +18,8 @@ def _env_int(name: str, default: int) -> int:
 class Settings:
     openrouter_api_key: str = field(default_factory=lambda: _env("OPENROUTER_API_KEY"))
     openrouter_base_url: str = field(default_factory=lambda: _env("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"))
-    openrouter_vision_model: str = field(default_factory=lambda: _env("OPENROUTER_VISION_MODEL", "google/gemini-2.5-flash"))
-    openrouter_embedding_model: str = field(default_factory=lambda: _env("OPENROUTER_EMBEDDING_MODEL", "openai/text-embedding-3-small"))
+    openrouter_vision_model: str = field(default_factory=lambda: _env("OPENROUTER_VISION_MODEL", "openrouter/free"))
+    openrouter_embedding_model: str = field(default_factory=lambda: _env("OPENROUTER_EMBEDDING_MODEL"))
     use_openrouter: bool = field(default_factory=lambda: _env("BRIAN_AI_USE_OPENROUTER").lower() in {"1", "true", "yes"})
     neo4j_uri: str = field(default_factory=lambda: _env("NEO4J_URI"))
     neo4j_user: str = field(default_factory=lambda: _env("NEO4J_USER", "neo4j"))

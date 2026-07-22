@@ -15,7 +15,7 @@ type AppState = {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  model: 'openai/gpt-4o-mini',
+  model: 'openrouter/free',
   activeDocumentId: null,
   copilotDraftQuery: '',
   sunlightMode: false,

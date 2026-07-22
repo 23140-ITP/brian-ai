@@ -1,7 +1,5 @@
-import { CircleCheck } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,19 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useAppStore } from '@/store/appStore'
 import { WorkspaceId, workspaceOptions } from '@/lib/workspace'
 import { getWriteToken } from '@/services/api'
 import { getNavigationItem } from './navigation'
 import { SearchCommand } from './SearchCommand'
 import { ThemeToggle } from './ThemeToggle'
+import { SidebarTrigger } from '@/components/ui/sidebar'
 
 const MODEL_OPTIONS = [
-  { value: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
-  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude Sonnet' },
-  { value: 'google/gemini-flash-1.5', label: 'Gemini Flash' },
+  { value: 'openrouter/free', label: 'OpenRouter Free' },
 ]
 
 export function AppHeader() {
@@ -47,18 +42,13 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b bg-background/92 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/78 md:px-6">
-      <SidebarTrigger />
-      <Separator orientation="vertical" className="h-5" />
+      <SidebarTrigger className="lg:hidden" />
       <div className="hidden min-w-0 lg:block">
         <p className="truncate text-sm font-medium">{current.label}</p>
         <p className="truncate text-xs text-muted-foreground">{current.description}</p>
       </div>
       <div className="ml-auto flex items-center gap-1.5">
         <SearchCommand />
-        <Badge variant="outline" className="hidden gap-1.5 lg:inline-flex">
-          <CircleCheck data-icon="inline-start" />
-          {workspace === 'live' ? 'Live data' : 'Demo data'}
-        </Badge>
         <Select value={workspace} onValueChange={selectWorkspace}>
           <SelectTrigger className="min-w-28 sm:min-w-40" aria-label="Select workspace">
             <SelectValue placeholder="Workspace" />

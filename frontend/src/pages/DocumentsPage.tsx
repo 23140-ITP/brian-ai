@@ -207,7 +207,7 @@ export function DocumentsPage() {
               <h2 id="impact-receipt-heading">Incident-to-action receipt</h2>
             </CardTitle>
             <CardDescription>{receipt.document.filename} - {receipt.provenance.method}</CardDescription>
-            <CardAction><Badge variant="secondary">Evidence backed</Badge></CardAction>
+            <CardAction><Badge variant="secondary">{demo ? 'Simulated demo' : 'Evidence backed'}</Badge></CardAction>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
             <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border lg:grid-cols-4">
@@ -227,7 +227,7 @@ export function DocumentsPage() {
             <section className="grid gap-3" aria-labelledby="verified-facts-heading">
               <div>
                 <h3 id="verified-facts-heading" className="font-heading text-sm font-semibold">Verified facts</h3>
-                <p className="text-xs text-muted-foreground">Directly extracted from the selected evidence.</p>
+                <p className="text-xs text-muted-foreground">{demo ? 'Preloaded demonstration output; not extracted from the uploaded file.' : 'Directly extracted from the selected evidence.'}</p>
               </div>
               {receipt.facts.length ? (
                 <ul className="grid gap-2 text-sm">

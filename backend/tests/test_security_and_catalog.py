@@ -203,6 +203,30 @@ class RequestGuardTests(unittest.TestCase):
         self.assertEqual(first.status_code, 200)
         self.assertEqual(second.status_code, 429)
 
+    def test_query_rejects_paid_model_ids(self) -> None:
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/query",
+                json={"query": "P-204B", "model": "openai/gpt-4o-mini"},
+            )
+        self.assertEqual(response.status_code, 422)
+
+    def test_paid_vision_setting_is_reported_as_unavailable(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "BRIAN_AI_USE_OPENROUTER": "1",
+                "OPENROUTER_VISION_MODEL": "google/gemini-2.5-flash",
+            },
+            clear=False,
+        ):
+            get_settings.cache_clear()
+            with TestClient(app) as client:
+                response = client.get("/api/system/status")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["ocr"]["visionConfigured"])
+
 
 class CorpusCatalogTests(unittest.TestCase):
     def test_registered_document_survives_fresh_catalog_instance(self) -> None:

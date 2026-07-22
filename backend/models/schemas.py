@@ -4,11 +4,7 @@ from pydantic import BaseModel, Field
 
 class QueryRequest(BaseModel):
     query: str = Field(min_length=1, max_length=2000)
-    model: Literal[
-        "openai/gpt-4o-mini",
-        "anthropic/claude-3.5-sonnet",
-        "google/gemini-flash-1.5",
-    ] = "openai/gpt-4o-mini"
+    model: Literal["openrouter/free"] = "openrouter/free"
     scope: Literal["rag", "compliance", "benchmark"] = "rag"
     source_file: str | None = Field(default=None, max_length=255, pattern=r"^[^/\\]+$")
 

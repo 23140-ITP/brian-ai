@@ -7,6 +7,7 @@ const FRONTEND_URL = process.env.BRIAN_AI_FRONTEND_URL || 'http://127.0.0.1:5182
 const DEBUG_PORT = Number(process.env.BRIAN_AI_CDP_PORT || 9231)
 const SCREENSHOT_DIR = process.env.BRIAN_AI_SMOKE_SCREENSHOT_DIR || path.join('docs', 'frontend-smoke')
 const FIELD_CACHE_NAME = 'brian-ai-field-v5-public-site'
+const WORKSPACE_STORAGE_KEY = 'brian-ai-workspace'
 
 const ROUTES = [
   ['/', 'Know what happened'],
@@ -16,7 +17,7 @@ const ROUTES = [
   ['/compliance', 'OISD/PESO Compliance Matrix'],
   ['/documents', 'Document Intelligence'],
   ['/capture', 'Expert Knowledge Capture'],
-  ['/settings', ['Production readiness', 'Hackathon submission readiness']],
+  ['/settings', ['Settings', 'Production readiness']],
   ['/field', 'Brian AI Field'],
 ]
 
@@ -92,6 +93,10 @@ async function evaluate(send, expression) {
   return result.result.value
 }
 
+async function setWorkspace(send, workspace) {
+  await evaluate(send, `localStorage.setItem(${JSON.stringify(WORKSPACE_STORAGE_KEY)}, ${JSON.stringify(workspace)})`)
+}
+
 async function inspectRoute(send, route, expectedText) {
   await send('Page.navigate', { url: `${FRONTEND_URL}${route}?smoke=${Date.now()}` })
   await delay(1800)
@@ -120,6 +125,7 @@ async function inspectRoute(send, route, expectedText) {
 }
 
 async function clickComplianceHandoff(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/compliance?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
@@ -144,6 +150,7 @@ async function clickComplianceHandoff(send) {
 }
 
 async function clickGraphPath(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/knowledge-graph?smoke=${Date.now()}` })
   await delay(2200)
   const result = await evaluate(send, `
@@ -171,11 +178,13 @@ async function clickGraphPath(send) {
 }
 
 async function verifyFieldPwa(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/field?smoke=${Date.now()}` })
   await delay(3200)
   const result = await evaluate(send, `
     (async () => {
-      if ('serviceWorker' in navigator) await navigator.serviceWorker.ready
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      if ('serviceWorker' in navigator) await Promise.race([navigator.serviceWorker.ready, wait(5000)])
       const cacheNames = 'caches' in window ? await caches.keys() : []
       const cacheName = ${JSON.stringify(FIELD_CACHE_NAME)}
       const cache = cacheNames.includes(cacheName) ? await caches.open(cacheName) : null
@@ -195,6 +204,7 @@ async function verifyFieldPwa(send) {
 }
 
 async function verifyMobileShell(send) {
+  await setWorkspace(send, 'demo')
   await send('Emulation.setDeviceMetricsOverride', {
     width: 375,
     height: 812,
@@ -210,6 +220,7 @@ async function verifyMobileShell(send) {
   const navigation = await evaluate(send, `
     (async () => {
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      for (let i = 0; i < 60 && !document.querySelector('[data-slot="sidebar-trigger"]'); i += 1) await wait(50)
       const toggle = document.querySelector('[data-slot="sidebar-trigger"]')
       if (!toggle) return { ok: false, reason: 'mobile sidebar trigger missing' }
       toggle.click()
@@ -219,13 +230,13 @@ async function verifyMobileShell(send) {
       if (!link) return { ok: false, reason: 'Documents link missing from mobile sidebar' }
       link.click()
       for (let i = 0; i < 40; i += 1) {
-        if (location.pathname === '/documents' && !document.querySelector('[role="dialog"]')) break
+        if (location.pathname === '/documents' && !document.querySelector('[role="dialog"][data-state="open"]')) break
         await wait(50)
       }
       return {
-        ok: location.pathname === '/documents' && !document.querySelector('[role="dialog"]'),
+        ok: location.pathname === '/documents' && !document.querySelector('[role="dialog"][data-state="open"]'),
         route: location.pathname,
-        sidebarClosed: !document.querySelector('[role="dialog"]')
+        sidebarClosed: !document.querySelector('[role="dialog"][data-state="open"]')
       }
     })()
   `)
@@ -234,6 +245,7 @@ async function verifyMobileShell(send) {
 }
 
 async function verifyDashboardDialog(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
@@ -247,7 +259,7 @@ async function verifyDashboardDialog(send) {
       const rows = dialog?.querySelectorAll('tbody tr').length || 0
       const close = [...(dialog?.querySelectorAll('button') || [])].find((item) => item.textContent?.trim() === 'Close')
       close?.click()
-      for (let i = 0; i < 20 && document.querySelector('[role="dialog"]'); i += 1) await wait(50)
+      for (let i = 0; i < 60 && document.querySelector('[role="dialog"]'); i += 1) await wait(50)
       return { ok: rows >= 15 && !document.querySelector('[role="dialog"]'), rows, closed: !document.querySelector('[role="dialog"]') }
     })()
   `)
@@ -256,6 +268,7 @@ async function verifyDashboardDialog(send) {
 }
 
 async function verifyCaptureStart(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/capture?smoke=${Date.now()}` })
   await delay(2200)
   const result = await evaluate(send, `
@@ -274,13 +287,20 @@ async function verifyCaptureStart(send) {
 }
 
 async function verifyGraphDocumentHandoff(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/knowledge-graph?smoke=${Date.now()}` })
   await delay(2200)
   const result = await evaluate(send, `
     (async () => {
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
       const node = document.querySelector('[role="button"][aria-label^="Select P-204B"]')
-      if (!node) return { ok: false, reason: 'P-204B graph node missing' }
+      if (!node) return {
+        ok: false,
+        reason: 'P-204B graph node missing',
+        workspace: localStorage.getItem('brian-ai-workspace'),
+        text: (document.body.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 300),
+        graphLabels: [...document.querySelectorAll('[role="button"][aria-label]')].map((item) => item.getAttribute('aria-label')).slice(0, 10)
+      }
       node.dispatchEvent(new MouseEvent('click', { bubbles: true }))
       await wait(100)
       const filename = 'Incident-2023-07-15-P204B-Seal-Failure.pdf'
@@ -300,6 +320,7 @@ async function verifyGraphDocumentHandoff(send) {
 }
 
 async function verifyFieldInteraction(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/field?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
@@ -315,8 +336,11 @@ async function verifyFieldInteraction(send) {
       lookup.click()
       for (let i = 0; i < 80 && !document.querySelector('h1')?.textContent?.includes('V-301'); i += 1) await wait(50)
       sunlight.click()
-      await wait(100)
-      const sunlightApplied = Boolean(document.querySelector('main.sunlight-mode')) && document.querySelector('meta[name="theme-color"]')?.getAttribute('content') === '#ffffff'
+      for (let i = 0; i < 20; i += 1) {
+        if (document.querySelector('.sunlight-mode') && document.querySelector('meta[name="theme-color"]')?.getAttribute('content') === '#ffffff') break
+        await wait(50)
+      }
+      const sunlightApplied = Boolean(document.querySelector('.sunlight-mode')) && document.querySelector('meta[name="theme-color"]')?.getAttribute('content') === '#ffffff'
       sunlight.click()
       return {
         ok: document.querySelector('h1')?.textContent?.includes('V-301') && sunlightApplied,
@@ -330,6 +354,7 @@ async function verifyFieldInteraction(send) {
 }
 
 async function verifyDesktopSidebar(send) {
+  await setWorkspace(send, 'demo')
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
   await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
   await delay(1800)
@@ -352,6 +377,7 @@ async function verifyDesktopSidebar(send) {
 }
 
 async function verifyLandingCta(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
   await delay(1200)
   const result = await evaluate(send, `
@@ -450,6 +476,8 @@ async function main() {
     console.log(JSON.stringify({ routes: routes.length, landingCta, compliance, graph, fieldPwa, dashboardDialog, capture, graphDocument, fieldInteraction, desktopSidebar, mobile, liveAccessPrompt, screenshotDir: SCREENSHOT_DIR }, null, 2))
   } finally {
     child.kill()
+    if (child.exitCode === null) await Promise.race([new Promise((resolve) => child.once('exit', resolve)), delay(2000)])
+    fs.rmSync(userDataDir, { recursive: true, force: true })
   }
 }
 

@@ -22,28 +22,8 @@ import {
 import { api, getWriteToken, setWriteToken, SystemStatus } from '../services/api'
 import { useAppStore } from '../store/appStore'
 
-const judgingCriteria = [
-  'Relevance and problem understanding',
-  'Innovation and creativity',
-  'Technical implementation',
-  'Potential impact and scalability',
-  'Presentation and communication',
-  'Business viability'
-]
-
-const submissionArtifacts = [
-  { label: 'Working prototype', value: 'Brian AI web app' },
-  { label: 'Pitch deck', value: 'docs/Brian_AI_pitch_deck.pptx' },
-  { label: 'Demo video script', value: 'docs/DEMO_VIDEO_SCRIPT.md' },
-  { label: 'Public links checklist', value: 'docs/PUBLIC_LINKS_CHECKLIST.md' },
-  { label: 'Submission runbook', value: 'docs/SUBMISSION.md' },
-  { label: 'Evidence audit', value: 'docs/IMPLEMENTATION_AUDIT.md' }
-]
-
 const MODEL_OPTIONS = [
-  { value: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
-  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude Sonnet' },
-  { value: 'google/gemini-flash-1.5', label: 'Gemini Flash' }
+  { value: 'openrouter/free', label: 'OpenRouter Free' }
 ]
 
 type StatusCardProps = {
@@ -223,42 +203,6 @@ export function SettingsPage() {
         </Card>
       )}
 
-      {demo && <Card>
-        <CardHeader>
-          <CardDescription>Hackathon submission readiness</CardDescription>
-          <CardTitle>Brian AI is packaged around the judging story.</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">Working prototype, pitch deck, demo video script, and verification evidence are tracked as first-class submission artifacts for public-link submission.</p>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card size="sm">
-              <CardHeader>
-                <CardTitle>Judging fit</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
-                  {judgingCriteria.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
-            <Card size="sm">
-              <CardHeader>
-                <CardTitle>Artifacts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="flex flex-col gap-2 text-sm">
-                  {submissionArtifacts.map((artifact) => (
-                    <li key={artifact.label} className="flex flex-col gap-0.5">
-                      <strong className="font-medium">{artifact.label}</strong>
-                      <span className="text-muted-foreground">{artifact.value}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>}
     </div>
   )
 }
