@@ -7,6 +7,7 @@ This audit records the verified local and public build as of 2026-07-22.
 - React/Vite app shell with routes for Dashboard, AI Copilot, Knowledge Graph, Compliance, Documents, Field Mode, Expert Capture, and Settings.
 - Frontend routes are code-split with `React.lazy`; the production build now emits separate page chunks and keeps the main app chunk under Vite's 500 kB warning threshold.
 - FastAPI backend with health, query, streaming query, ingest, graph proxy, compliance, alerts, benchmark, OCR, capture, and provider-status endpoints.
+- PDF ingestion extracts text from compressed PDF streams with `pypdf` and retains the existing raw-stream fallback for minimal PDFs.
 - 20 generated refinery corpus files in `data/corpus/`.
 - Warm SQLite vector cache in `data/vectors.db`, with OpenRouter embeddings enabled in production.
 - Unified local RAG path with citations and an `ERR_EMPTY_KB` SSE error contract.
@@ -25,7 +26,7 @@ This audit records the verified local and public build as of 2026-07-22.
 - Expert Knowledge Capture now includes the planned review step after five interview answers, showing expert, topic, all Q&A pairs, Previous, and Submit & Ingest before writing to the corpus.
 - All React routes are wrapped in page-level error boundaries with a friendly retry view instead of a white-screen failure.
 - Neo4j production path has an optional async driver singleton, schema constraints, FastAPI lifespan cleanup, and a 60-minute AuraDB heartbeat task that no-ops safely without credentials.
-- Railway Docker startup now runs `/startup.sh`, which seeds `/data/chroma`, `/data/corpus`, benchmark cache, and SQLite cache on a fresh persistent volume.
+- Railway Docker startup now runs `/startup.sh`, which seeds `/data/corpus`, the benchmark cache, and the SQLite vector cache on a fresh persistent volume.
 - Generated PowerPoint pitch deck and rendered slide previews.
 - Demo video script exists at `docs/DEMO_VIDEO_SCRIPT.md` and maps the app routes to a five-minute recording flow.
 - Public links checklist exists at `docs/PUBLIC_LINKS_CHECKLIST.md` and covers Railway backend, Vercel frontend, pitch deck, and demo video URL handoff.

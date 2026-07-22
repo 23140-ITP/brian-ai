@@ -80,7 +80,7 @@ Dedicated recording script: `docs/DEMO_VIDEO_SCRIPT.md`.
 Generated deck:
 
 - PowerPoint: `docs/Brian_AI_pitch_deck.pptx`
-- Rendered preview PNGs: `docs/pitch-deck-preview-final/`
+- Local rendered preview PNGs (generated, not committed): `docs/pitch-deck-preview-final/`
 - Demo video script: `docs/DEMO_VIDEO_SCRIPT.md`
 - Public links checklist: `docs/PUBLIC_LINKS_CHECKLIST.md`
 
