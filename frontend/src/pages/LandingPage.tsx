@@ -1,10 +1,13 @@
 import {
+  Activity,
   ArrowRight,
   BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
+  Clock3,
   FileSearch,
   GitBranch,
+  Radio,
   ShieldCheck,
   Sparkles,
   Wrench,
@@ -20,24 +23,6 @@ const sources = [
   ['OISD and PESO', ShieldCheck],
   ['Expert notes', Sparkles],
   ['Knowledge graph', GitBranch],
-] as const
-
-const capabilities = [
-  {
-    icon: FileSearch,
-    title: 'Ask across plant evidence',
-    body: 'Brian retrieves the records behind an answer, not just the nearest paragraph.',
-  },
-  {
-    icon: GitBranch,
-    title: 'Connect equipment history',
-    body: 'Assets, incidents, regulations, and expert knowledge resolve into one traceable context.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Act with the source attached',
-    body: 'Each recommendation carries citations your operations and compliance teams can inspect.',
-  },
 ] as const
 
 export function LandingPage() {
@@ -104,40 +89,94 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="platform" className="home-section evidence-section" aria-labelledby="evidence-title">
-          <header className="home-section-heading align-left">
-            <h2 id="evidence-title">From fragmented records to one verified action.</h2>
-            <p>Brian combines retrieval, graph context, and deterministic checks before it presents an answer.</p>
+        <section id="platform" className="home-section learns-section" aria-labelledby="learns-title">
+          <header className="home-section-heading">
+            <h2 id="learns-title">Brian learns while your plant works.</h2>
+            <p>Every drawing, inspection, work order, and expert observation becomes usable memory with its source attached.</p>
           </header>
-          <figure className="evidence-visual">
-            <img
-              src="/brand/brian-evidence-flow.webp"
-              width="1600"
-              height="900"
-              loading="lazy"
-              decoding="async"
-              alt="Plant documents flowing through a knowledge engine into a verified maintenance action"
-            />
-            <figcaption>Source evidence stays visible from the first query to the final action.</figcaption>
-          </figure>
+          <div className="knowledge-flow">
+            <article>
+              <span>Operations</span>
+              <p><Radio size={14} aria-hidden="true" /> P-204B vibration above baseline</p>
+              <p><Clock3 size={14} aria-hidden="true" /> Shift note added 12 minutes ago</p>
+            </article>
+            <article>
+              <span>Maintenance</span>
+              <p><Wrench size={14} aria-hidden="true" /> Seal replacement history linked</p>
+              <p><FileSearch size={14} aria-hidden="true" /> OEM manual section matched</p>
+            </article>
+            <article>
+              <span>Compliance</span>
+              <p><ShieldCheck size={14} aria-hidden="true" /> 2 critical gaps surfaced</p>
+              <p><ClipboardCheck size={14} aria-hidden="true" /> Evidence matrix refreshed</p>
+            </article>
+            <article>
+              <span>Engineering</span>
+              <p><GitBranch size={14} aria-hidden="true" /> 73 nodes connected</p>
+              <p><CheckCircle2 size={14} aria-hidden="true" /> Failure pattern confirmed</p>
+            </article>
+            <div className="knowledge-node" aria-label="Brian unified memory"><BrainCircuit size={29} /></div>
+          </div>
         </section>
 
-        <section className="home-section capability-section" aria-labelledby="capability-title">
-          <div className="capability-intro">
-            <h2 id="capability-title">Built for questions with consequences.</h2>
-            <p>Operational answers must be fast, but they also need to survive review.</p>
-            <Button type="button" variant="link" className="text-action" onClick={tryApp}>
-              Ask Brian <ArrowRight data-icon="inline-end" aria-hidden="true" />
-            </Button>
-          </div>
-          <div className="capability-ledger">
-            {capabilities.map(({ icon: Icon, title, body }) => (
-              <article key={title}>
-                <Icon aria-hidden="true" />
-                <div><h3>{title}</h3><p>{body}</p></div>
-                <CheckCircle2 aria-label="Included" />
-              </article>
-            ))}
+        <section className="home-section work-section" aria-labelledby="work-title">
+          <header className="home-section-heading">
+            <h2 id="work-title">Every answer, <span>one place.</span></h2>
+            <p>Ask what happened, build on existing evidence, and catch problems before the next shift inherits them.</p>
+          </header>
+
+          <div className="feature-list">
+            <article className="home-feature">
+              <div className="feature-copy">
+                <span>01</span>
+                <h3>Query your plant</h3>
+                <p>Ask in plain language. Brian traces the answer through incidents, manuals, work orders, and field notes before responding.</p>
+                <Button type="button" variant="link" className="text-action" onClick={tryApp}>Run the evidence query <ArrowRight data-icon="inline-end" aria-hidden="true" /></Button>
+              </div>
+              <div className="product-canvas query-canvas">
+                <div className="canvas-bar"><span><BrainCircuit size={15} aria-hidden="true" /> Brian</span><em>Evidence mode</em></div>
+                <div className="message-row user-question">What caused the P-204B seal failure?</div>
+                <div className="message-row brian-answer">
+                  <strong>Brian</strong>
+                  <p>A recurring seal degradation pattern followed elevated vibration and delayed alignment correction. Three linked records support this finding.</p>
+                  <div className="citation-row"><span>Incident report</span><span>Work orders</span><span>Vibration analysis</span></div>
+                </div>
+              </div>
+            </article>
+
+            <article className="home-feature reverse">
+              <div className="feature-copy">
+                <span>02</span>
+                <h3>Nothing stays siloed</h3>
+                <p>Documents, equipment, regulations, and people resolve into one connected operating picture instead of separate folders.</p>
+                <Button type="button" variant="link" className="text-action" onClick={tryApp}>Explore the knowledge graph <ArrowRight data-icon="inline-end" aria-hidden="true" /></Button>
+              </div>
+              <div className="product-canvas activity-canvas">
+                <div className="canvas-bar"><span><Activity size={15} aria-hidden="true" /> Unified activity</span><em>Live</em></div>
+                <div className="activity-row"><FileSearch size={17} aria-hidden="true" /><div><strong>PID-CDU-001.pdf</strong><span>Document indexed and linked</span></div><small>now</small></div>
+                <div className="activity-row"><GitBranch size={17} aria-hidden="true" /><div><strong>P-204B failure chain</strong><span>47 evidence relationships</span></div><small>2m</small></div>
+                <div className="activity-row"><ClipboardCheck size={17} aria-hidden="true" /><div><strong>OISD-116-4.2</strong><span>Fired Heater / Shutdown</span></div><small>8m</small></div>
+              </div>
+            </article>
+
+            <article className="home-feature">
+              <div className="feature-copy">
+                <span>03</span>
+                <h3>It flags the next problem</h3>
+                <p>Brian connects recurring symptoms across years of plant history and puts the supporting evidence beside the alert.</p>
+                <Button type="button" variant="link" className="text-action" onClick={tryApp}>Open the evidence matrix <ArrowRight data-icon="inline-end" aria-hidden="true" /></Button>
+              </div>
+              <div className="product-canvas alert-canvas">
+                <div className="canvas-bar"><span><Radio size={15} aria-hidden="true" /> Open loops</span><em>3 active</em></div>
+                <div className="priority-alert">
+                  <span>High priority</span>
+                  <strong>P-204B: Recurring seal degradation pattern</strong>
+                  <p>Evidence links the current vibration signature to two previous seal failures and an overdue alignment action.</p>
+                </div>
+                <div className="alert-task"><CheckCircle2 size={16} aria-hidden="true" /><span>Review vibration trend before next shift</span></div>
+                <div className="alert-task"><CheckCircle2 size={16} aria-hidden="true" /><span>Attach missing PSV test certificate</span></div>
+              </div>
+            </article>
           </div>
         </section>
 
