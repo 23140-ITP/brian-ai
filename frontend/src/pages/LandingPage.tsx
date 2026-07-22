@@ -17,12 +17,12 @@ import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/store/appStore'
 
 const sources = [
-  ['P&IDs', FileSearch],
-  ['Work orders', Wrench],
-  ['Inspections', ClipboardCheck],
-  ['OISD and PESO', ShieldCheck],
-  ['Expert notes', Sparkles],
-  ['Knowledge graph', GitBranch],
+  ['P&IDs', 'Drawings and asset relationships', FileSearch],
+  ['Work orders', 'Maintenance history and open actions', Wrench],
+  ['Inspections', 'Findings, readings, and evidence', ClipboardCheck],
+  ['OISD and PESO', 'Clause-level compliance context', ShieldCheck],
+  ['Expert notes', 'Operator experience made searchable', Sparkles],
+  ['Knowledge graph', 'Every source connected to the asset', GitBranch],
 ] as const
 
 export function LandingPage() {
@@ -46,12 +46,15 @@ export function LandingPage() {
           Brian AI
         </a>
         <div className="home-nav-links">
+          <Button asChild variant="ghost" className="home-nav-link"><a href="#top">Overview</a></Button>
+          <Button asChild variant="ghost" className="home-nav-link"><a href="#sources">Sources</a></Button>
           <Button asChild variant="ghost" className="home-nav-link"><a href="#platform">Platform</a></Button>
+          <Button asChild variant="ghost" className="home-nav-link"><a href="#capabilities">Capabilities</a></Button>
           <Button asChild variant="ghost" className="home-nav-link"><a href="#impact">Impact</a></Button>
-          <Button type="button" className="home-button compact" onClick={tryApp}>
-            Open workspace <ArrowRight data-icon="inline-end" aria-hidden="true" />
-          </Button>
         </div>
+        <Button type="button" className="home-button compact home-nav-cta" onClick={tryApp}>
+          Open workspace <ArrowRight data-icon="inline-end" aria-hidden="true" />
+        </Button>
       </nav>
 
       <main id="main-content" tabIndex={-1} className="home-main outline-none">
@@ -80,11 +83,19 @@ export function LandingPage() {
           </figure>
         </section>
 
-        <section className="source-band" aria-labelledby="source-title">
-          <h2 id="source-title">One memory across every plant source</h2>
+        <section id="sources" className="source-band" aria-labelledby="source-title">
+          <header className="source-intro">
+            <span>Connected inputs</span>
+            <h2 id="source-title">One memory across every plant source</h2>
+            <p>Brian keeps the original evidence attached while connecting every record to the work it informs.</p>
+          </header>
           <div className="source-rail">
-            {sources.map(([label, Icon]) => (
-              <span key={label}><Icon size={15} aria-hidden="true" /> {label}</span>
+            {sources.map(([label, detail, Icon]) => (
+              <div className="source-card" key={label}>
+                <Icon size={20} aria-hidden="true" />
+                <strong>{label}</strong>
+                <span>{detail}</span>
+              </div>
             ))}
           </div>
         </section>
@@ -119,7 +130,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="home-section work-section" aria-labelledby="work-title">
+        <section id="capabilities" className="home-section work-section" aria-labelledby="work-title">
           <header className="home-section-heading">
             <h2 id="work-title">Every answer, <span>one place.</span></h2>
             <p>Ask what happened, build on existing evidence, and catch problems before the next shift inherits them.</p>
