@@ -14,7 +14,7 @@ Live app: https://brian-ai-app.vercel.app
 
 ## Stack
 
-- Frontend: React, Vite, TypeScript
+- Frontend: React 19, Vite 6, TypeScript, Tailwind CSS 4, shadcn/ui
 - Backend: FastAPI
 - Deployment: Vercel frontend, Railway backend
 
