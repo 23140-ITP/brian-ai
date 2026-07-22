@@ -6,10 +6,11 @@ import path from 'node:path'
 const FRONTEND_URL = process.env.BRIAN_AI_FRONTEND_URL || 'http://127.0.0.1:5182'
 const DEBUG_PORT = Number(process.env.BRIAN_AI_CDP_PORT || 9231)
 const SCREENSHOT_DIR = process.env.BRIAN_AI_SMOKE_SCREENSHOT_DIR || path.join('docs', 'frontend-smoke')
-const FIELD_CACHE_NAME = 'brian-ai-field-v4-shadcn-admin'
+const FIELD_CACHE_NAME = 'brian-ai-field-v5-public-site'
 
 const ROUTES = [
-  ['/', 'Brian AI Command Center'],
+  ['/', 'Know what happened'],
+  ['/app', 'Brian AI Command Center'],
   ['/copilot', 'Ask refinery questions with citations'],
   ['/knowledge-graph', 'Knowledge Graph'],
   ['/compliance', 'OISD/PESO Compliance Matrix'],
@@ -204,7 +205,7 @@ async function verifyMobileShell(send) {
   const routes = []
   for (const [route, expectedText] of ROUTES) routes.push(await inspectRoute(send, route, expectedText))
 
-  await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
+  await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
   await delay(1800)
   const navigation = await evaluate(send, `
     (async () => {
@@ -233,7 +234,7 @@ async function verifyMobileShell(send) {
 }
 
 async function verifyDashboardDialog(send) {
-  await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
+  await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
     (async () => {
@@ -330,7 +331,7 @@ async function verifyFieldInteraction(send) {
 
 async function verifyDesktopSidebar(send) {
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
-  await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
+  await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
     (async () => {
@@ -347,6 +348,29 @@ async function verifyDesktopSidebar(send) {
     })()
   `)
   if (!result.ok) throw new Error(`Desktop sidebar smoke failed: ${JSON.stringify(result)}`)
+  return result
+}
+
+async function verifyLandingCta(send) {
+  await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
+  await delay(1200)
+  const result = await evaluate(send, `
+    (async () => {
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.includes('Prove it with live evidence'))
+      if (!button) return { ok: false, reason: 'primary homepage CTA missing' }
+      button.click()
+      for (let i = 0; i < 40; i += 1) {
+        if (location.pathname === '/app' && (document.body.textContent || '').includes('Brian AI Command Center')) break
+        await wait(50)
+      }
+      return {
+        ok: location.pathname === '/app' && (document.body.textContent || '').includes('Brian AI Command Center'),
+        route: location.pathname,
+      }
+    })()
+  `)
+  if (!result.ok) throw new Error(`Landing CTA smoke failed: ${JSON.stringify(result)}`)
   return result
 }
 
@@ -375,6 +399,7 @@ async function main() {
 
     const routes = []
     for (const [route, expectedText] of ROUTES) routes.push(await inspectRoute(send, route, expectedText))
+    const landingCta = await verifyLandingCta(send)
     const compliance = await clickComplianceHandoff(send)
     const graph = await clickGraphPath(send)
     const fieldPwa = await verifyFieldPwa(send)
@@ -389,7 +414,7 @@ async function main() {
     ws.close()
 
     if (exceptions.length) throw new Error(`Browser exceptions: ${exceptions.join('\\n')}`)
-    console.log(JSON.stringify({ routes: routes.length, compliance, graph, fieldPwa, dashboardDialog, capture, graphDocument, fieldInteraction, desktopSidebar, mobile, screenshotDir: SCREENSHOT_DIR }, null, 2))
+    console.log(JSON.stringify({ routes: routes.length, landingCta, compliance, graph, fieldPwa, dashboardDialog, capture, graphDocument, fieldInteraction, desktopSidebar, mobile, screenshotDir: SCREENSHOT_DIR }, null, 2))
   } finally {
     child.kill()
   }

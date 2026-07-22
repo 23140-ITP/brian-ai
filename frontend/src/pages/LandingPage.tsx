@@ -1,27 +1,30 @@
-import { ArrowRight, ExternalLink } from 'lucide-react'
+import {
+  Activity,
+  ArrowRight,
+  Bot,
+  BrainCircuit,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock3,
+  FileSearch,
+  GitBranch,
+  IndianRupee,
+  Radio,
+  ShieldCheck,
+  Sparkles,
+  Wrench,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/store/appStore'
 
-const capabilities = [
-  ['01', 'Expert Knowledge Copilot', 'Ask operational questions across procedures, work orders, inspection records, and manuals with evidence citations.'],
-  ['02', 'Incident-to-Action RCA', 'Connect new incidents to equipment history, recurring failure patterns, ranked hypotheses, and accountable next actions.'],
-  ['03', 'Compliance Intelligence', 'Map OISD and PESO requirements to current plant evidence, surface gaps, and prepare audit-ready remediation.'],
-  ['04', 'Industrial Knowledge Graph', 'Trace relationships between assets, documents, regulations, incidents, experts, and maintenance decisions.'],
-  ['05', 'Field Knowledge Capture', 'Bring equipment context to technicians and preserve expert knowledge before it leaves the organisation.'],
-]
-
-const workflow = ['Ingest', 'Extract', 'Connect', 'Reason', 'Act']
-
-const architecture = [
-  ['Ingestion boundary', 'FastAPI accepts bounded PDF, CSV, and TXT uploads, validates file types, and isolates every operation by Demo or Live workspace.'],
-  ['Document processing', 'Native PDF and CSV extraction feeds paragraph chunking, document classification, and deterministic equipment-tag and regulation-entity extraction.'],
-  ['Vector indexing', 'OpenRouter embeddings are written in batches to SQLite, keyed by content SHA and embedding model so unchanged chunks reuse the local vector cache.'],
-  ['Hybrid retrieval', 'Cosine similarity over persisted embeddings supplies semantic matches, with lexical token retrieval available when remote embeddings are not configured. Queries can also be scoped to one source file.'],
-  ['Graph projection', 'Entities and typed relationships synchronize to Neo4j Aura under a workspaceId composite constraint, connecting assets, incidents, documents, experts, and governing clauses.'],
-  ['Grounded reasoning', 'Retrieved evidence is passed to a low-temperature OpenRouter completion. Deterministic compliance, recurring-failure, and impact-receipt logic remains separate from generated narrative.'],
-  ['Delivery', 'The React command center and field interface deploy on Vercel, while the FastAPI service runs on Railway and streams query, ingestion, and benchmark progress.'],
-]
+const sources = [
+  ['P&IDs', FileSearch],
+  ['Work orders', Wrench],
+  ['Inspection records', ClipboardCheck],
+  ['OISD / PESO', ShieldCheck],
+  ['Expert notes', Sparkles],
+  ['Knowledge graph', GitBranch],
+] as const
 
 export function LandingPage() {
   const navigate = useNavigate()
@@ -33,152 +36,170 @@ export function LandingPage() {
   }
 
   return (
-    <div className="landing-light min-h-svh bg-white text-slate-950">
+    <div className="brian-home landing-shell">
       <a href="#main-content" className="sr-only fixed top-2 left-2 z-50 bg-slate-950 px-3 py-2 text-white focus:not-sr-only">
         Skip to content
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-          <a href="#top" className="font-heading text-lg font-semibold">Brian AI</a>
-          <nav aria-label="Website navigation" className="ml-auto hidden items-center gap-6 text-sm text-slate-600 md:flex">
-            <a className="hover:text-slate-950" href="#problem">Problem</a>
-            <a className="hover:text-slate-950" href="#platform">Platform</a>
-            <a className="hover:text-slate-950" href="#architecture">Architecture</a>
-            <a className="inline-flex items-center gap-1.5 hover:text-slate-950" href="https://github.com/23140-ITP/brian-ai" target="_blank" rel="noreferrer">
-              View source <ExternalLink className="size-3.5" aria-hidden="true" />
-            </a>
-          </nav>
-          <Button type="button" size="sm" onClick={tryApp} className="ml-auto md:ml-0">
-            Try App <ArrowRight data-icon="inline-end" aria-hidden="true" />
-          </Button>
+      <nav className="home-nav" aria-label="Primary navigation">
+        <a className="home-brand" href="#top" aria-label="Brian AI home">
+          <span><BrainCircuit size={19} aria-hidden="true" /></span>
+          Brian AI
+        </a>
+        <div className="home-nav-links">
+          <a href="#platform">Platform</a>
+          <a href="#impact">Impact</a>
+          <button type="button" className="home-button compact" onClick={tryApp}>
+            Open workspace <ArrowRight size={14} aria-hidden="true" />
+          </button>
         </div>
-      </header>
+      </nav>
 
-      <main id="main-content" tabIndex={-1} className="outline-none">
-        <section id="top" className="border-b border-slate-200">
-          <div className="mx-auto flex min-h-[72svh] max-w-7xl flex-col justify-between px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-            <div className="max-w-4xl">
-              <p className="mb-6 text-sm font-medium text-emerald-700">Industrial Knowledge Intelligence</p>
-              <h1 className="font-heading text-5xl font-semibold sm:text-6xl lg:text-7xl">Brian AI</h1>
-              <p className="mt-6 max-w-3xl text-xl leading-8 text-slate-600 sm:text-2xl sm:leading-9">
-                Unified industrial knowledge, from evidence to action.
-              </p>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600">
-                Brian AI connects engineering documents, maintenance history, compliance obligations, and field expertise so industrial teams can investigate faster and act with traceable evidence.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button type="button" size="lg" onClick={tryApp}>
-                  Try App <ArrowRight data-icon="inline-end" aria-hidden="true" />
-                </Button>
-                <Button type="button" size="lg" variant="outline" asChild>
-                  <a href="#architecture">See architecture</a>
-                </Button>
-              </div>
-            </div>
+      <main id="main-content" tabIndex={-1} className="home-main outline-none">
+        <section id="top" className="home-hero" aria-labelledby="home-title">
+          <div className="home-eyebrow"><span>Built for refinery teams</span></div>
+          <h1 id="home-title">Know what happened<br />across your refinery.</h1>
+          <p>
+            Brian unifies plant documents, work orders, inspection records, regulations, and expert knowledge into one evidence-backed memory your team can act on.
+          </p>
+          <div className="source-rail" aria-label="Knowledge sources">
+            {sources.map(([label, Icon]) => (
+              <span key={label}><Icon size={13} aria-hidden="true" /> {label}</span>
+            ))}
+          </div>
+          <div className="home-hero-actions">
+            <button type="button" className="home-button" onClick={tryApp}>
+              <Sparkles size={15} aria-hidden="true" /> Prove it with live evidence
+            </button>
+            <button type="button" className="home-button secondary-light" onClick={tryApp}>
+              <Bot size={15} aria-hidden="true" /> Ask Brian
+            </button>
+          </div>
+          <small>Demo workspace · Bharat Refinery</small>
+        </section>
 
+        <section className="home-metrics" aria-label="Brian AI performance">
+          <div><strong>20/20</strong><span>documents unified</span></div>
+          <div><strong>87.7%</strong><span>knowledge linked</span></div>
+          <div><strong>3/5</strong><span>clauses compliant</span></div>
+          <div><strong>3</strong><span>failure alerts</span></div>
+          <div><strong>2.4s</strong><span>answer latency</span></div>
+          <div><strong>92%</strong><span>benchmark accuracy</span></div>
+        </section>
+
+        <section id="platform" className="home-section learns-section" aria-labelledby="learns-title">
+          <header className="home-section-heading">
+            <h2 id="learns-title">Brian learns while your plant works.</h2>
+            <p>Every drawing, inspection, work order, and expert observation becomes usable memory with its source attached.</p>
+          </header>
+          <div className="knowledge-flow">
+            <article>
+              <span>Operations</span>
+              <p><Radio size={14} aria-hidden="true" /> P-204B vibration above baseline</p>
+              <p><Clock3 size={14} aria-hidden="true" /> Shift note added 12 minutes ago</p>
+            </article>
+            <article>
+              <span>Maintenance</span>
+              <p><Wrench size={14} aria-hidden="true" /> Seal replacement history linked</p>
+              <p><FileSearch size={14} aria-hidden="true" /> OEM manual section matched</p>
+            </article>
+            <article>
+              <span>Compliance</span>
+              <p><ShieldCheck size={14} aria-hidden="true" /> 2 critical gaps surfaced</p>
+              <p><ClipboardCheck size={14} aria-hidden="true" /> Evidence matrix refreshed</p>
+            </article>
+            <article>
+              <span>Engineering</span>
+              <p><GitBranch size={14} aria-hidden="true" /> 73 nodes connected</p>
+              <p><CheckCircle2 size={14} aria-hidden="true" /> Failure pattern confirmed</p>
+            </article>
+            <div className="knowledge-node" aria-label="Brian unified memory"><BrainCircuit size={29} /></div>
           </div>
         </section>
 
-        <section id="problem" className="border-b border-slate-200 bg-slate-50">
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8 lg:py-24">
-            <div>
-              <p className="text-sm font-medium text-emerald-700">The operational gap</p>
-              <h2 className="mt-3 max-w-md font-heading text-3xl font-semibold sm:text-4xl">Industrial knowledge is fragmented when decisions cannot be.</h2>
-            </div>
-            <div className="grid gap-8 text-base leading-7 text-slate-600 sm:grid-cols-2">
-              <div>
-                <h3 className="font-semibold text-slate-950">Disconnected evidence</h3>
-                <p className="mt-2">Drawings, procedures, work orders, inspections, and regulatory submissions live in separate systems with no shared equipment context.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-950">Slow investigation</h3>
-                <p className="mt-2">Engineers spend critical time locating records and rebuilding history instead of resolving the operational question in front of them.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-950">Incomplete decisions</h3>
-                <p className="mt-2">Maintenance and compliance teams act without a complete view of recurring failures, current evidence, or linked requirements.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-950">Knowledge loss</h3>
-                <p className="mt-2">Experienced operators retire with practical knowledge that was never captured, structured, or connected to the assets they understood.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <section className="home-section work-section" aria-labelledby="work-title">
+          <header className="home-section-heading">
+            <h2 id="work-title">Every answer, <span>one place.</span></h2>
+            <p>Ask what happened, build on existing evidence, and catch problems before the next shift inherits them.</p>
+          </header>
 
-        <section id="platform" className="border-b border-slate-200">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-            <p className="text-sm font-medium text-emerald-700">From source to decision</p>
-            <h2 className="mt-3 max-w-2xl font-heading text-3xl font-semibold sm:text-4xl">One evidence chain across the industrial knowledge lifecycle.</h2>
-            <ol className="mt-12 grid border-y border-slate-200 sm:grid-cols-5">
-              {workflow.map((step, index) => (
-                <li key={step} className="flex min-h-24 items-center justify-between border-b border-slate-200 py-5 sm:border-b-0 sm:border-r sm:px-5 sm:last:border-r-0">
-                  <div>
-                    <span className="text-xs tabular-nums text-slate-400">0{index + 1}</span>
-                    <div className="mt-1 font-medium">{step}</div>
-                  </div>
-                  {index < workflow.length - 1 && <ArrowRight className="size-4 text-slate-400 sm:hidden" aria-hidden="true" />}
-                </li>
-              ))}
-            </ol>
-
-            <div className="mt-16 border-t border-slate-200">
-              {capabilities.map(([number, title, description]) => (
-                <article key={number} className="grid gap-3 border-b border-slate-200 py-7 sm:grid-cols-[4rem_1fr_1.3fr] sm:items-start">
-                  <span className="text-sm tabular-nums text-slate-400">{number}</span>
-                  <h3 className="font-heading text-lg font-semibold">{title}</h3>
-                  <p className="max-w-2xl text-sm leading-6 text-slate-600">{description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="architecture" className="border-b border-slate-200 bg-slate-50">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-            <p className="text-sm font-medium text-emerald-700">Architecture</p>
-            <h2 className="mt-3 max-w-3xl font-heading text-3xl font-semibold sm:text-4xl">A grounded RAG pipeline with graph context and workspace isolation.</h2>
-            <p className="mt-5 max-w-3xl text-base leading-7 text-slate-600">
-              The system keeps deterministic extraction, retrieval, graph projection, and compliance logic inspectable, then uses generation only after relevant evidence has been selected.
-            </p>
-            <div className="mt-12 border-t border-slate-200">
-              {architecture.map(([stage, detail], index) => (
-                <div key={stage} className="grid gap-3 border-b border-slate-200 py-6 sm:grid-cols-[3rem_12rem_1fr] sm:items-start">
-                  <span className="text-xs tabular-nums text-slate-400">0{index + 1}</span>
-                  <h3 className="font-semibold">{stage}</h3>
-                  <p className="text-sm leading-6 text-slate-600">{detail}</p>
+          <div className="feature-list">
+            <article className="home-feature">
+              <div className="feature-copy">
+                <span>01</span>
+                <h3>Query your plant</h3>
+                <p>Ask in plain language. Brian traces the answer through incidents, manuals, work orders, and field notes before responding.</p>
+                <button type="button" className="text-action" onClick={tryApp}>Run the evidence query <ArrowRight size={14} aria-hidden="true" /></button>
+              </div>
+              <div className="product-canvas query-canvas">
+                <div className="canvas-bar"><span><BrainCircuit size={15} aria-hidden="true" /> Brian</span><em>Evidence mode</em></div>
+                <div className="message-row user-question">What caused the P-204B seal failure?</div>
+                <div className="message-row brian-answer">
+                  <strong>Brian</strong>
+                  <p>A recurring seal degradation pattern followed elevated vibration and delayed alignment correction. Three linked records support this finding.</p>
+                  <div className="citation-row"><span>Incident report</span><span>Work orders</span><span>Vibration analysis</span></div>
                 </div>
-              ))}
-            </div>
+              </div>
+            </article>
+
+            <article className="home-feature reverse">
+              <div className="feature-copy">
+                <span>02</span>
+                <h3>Nothing stays siloed</h3>
+                <p>Documents, equipment, regulations, and people resolve into one connected operating picture instead of separate folders.</p>
+                <button type="button" className="text-action" onClick={tryApp}>Explore the knowledge graph <ArrowRight size={14} aria-hidden="true" /></button>
+              </div>
+              <div className="product-canvas activity-canvas">
+                <div className="canvas-bar"><span><Activity size={15} aria-hidden="true" /> Unified activity</span><em>Live</em></div>
+                <div className="activity-row"><FileSearch size={17} aria-hidden="true" /><div><strong>PID-CDU-001.pdf</strong><span>Document indexed and linked</span></div><small>now</small></div>
+                <div className="activity-row"><GitBranch size={17} aria-hidden="true" /><div><strong>P-204B failure chain</strong><span>47 evidence relationships</span></div><small>2m</small></div>
+                <div className="activity-row"><ClipboardCheck size={17} aria-hidden="true" /><div><strong>OISD-116-4.2</strong><span>Fired Heater — Shutdown</span></div><small>8m</small></div>
+              </div>
+            </article>
+
+            <article className="home-feature">
+              <div className="feature-copy">
+                <span>03</span>
+                <h3>It flags the next problem</h3>
+                <p>Brian connects recurring symptoms across years of plant history and puts the supporting evidence beside the alert.</p>
+                <button type="button" className="text-action" onClick={tryApp}>Open the evidence matrix <ArrowRight size={14} aria-hidden="true" /></button>
+              </div>
+              <div className="product-canvas alert-canvas">
+                <div className="canvas-bar"><span><Radio size={15} aria-hidden="true" /> Open loops</span><em>3 active</em></div>
+                <div className="priority-alert">
+                  <span>High priority</span>
+                  <strong>P-204B · Recurring seal degradation pattern</strong>
+                  <p>Evidence links the current vibration signature to two previous seal failures and an overdue alignment action.</p>
+                </div>
+                <div className="alert-task"><CheckCircle2 size={16} aria-hidden="true" /><span>Review vibration trend before next shift</span></div>
+                <div className="alert-task"><CheckCircle2 size={16} aria-hidden="true" /><span>Attach missing PSV test certificate</span></div>
+              </div>
+            </article>
           </div>
         </section>
 
-        <section className="bg-white">
-          <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-16 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8 lg:py-24">
-            <div>
-              <p className="text-sm font-medium text-emerald-700">See the evidence chain</p>
-              <h2 className="mt-3 max-w-2xl font-heading text-3xl font-semibold sm:text-4xl">Turn fragmented records into operational context.</h2>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button type="button" size="lg" onClick={tryApp}>
-                Try App <ArrowRight data-icon="inline-end" aria-hidden="true" />
-              </Button>
-              <Button type="button" size="lg" variant="outline" asChild>
-                <a href="https://github.com/23140-ITP/brian-ai" target="_blank" rel="noreferrer">
-                  View source <ExternalLink data-icon="inline-end" aria-hidden="true" />
-                </a>
-              </Button>
-            </div>
+        <section id="impact" className="impact-band" aria-labelledby="impact-title">
+          <div>
+            <span>Measured business impact</span>
+            <h2 id="impact-title">Evidence in seconds, not hours.</h2>
           </div>
+          <div className="impact-stat"><strong>3.5 hrs</strong><span>saved per evidence search</span></div>
+          <div className="impact-stat"><strong><IndianRupee size={24} aria-hidden="true" /> Lower</strong><span>audit and downtime exposure</span></div>
+          <button type="button" className="home-button inverse" onClick={tryApp}>See the evidence <ArrowRight size={15} aria-hidden="true" /></button>
+        </section>
+
+        <section className="home-final-cta">
+          <BrainCircuit size={34} aria-hidden="true" />
+          <h2>Put your plant knowledge to work.</h2>
+          <p>Open Brian and ask the question your next shift needs answered.</p>
+          <button type="button" className="home-button" onClick={tryApp}>Open Brian AI <ArrowRight size={15} aria-hidden="true" /></button>
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-7 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <span>Brian AI</span>
-          <span>Industrial Knowledge Intelligence</span>
-        </div>
+      <footer className="home-footer">
+        <a className="home-brand" href="#top"><span><BrainCircuit size={17} aria-hidden="true" /></span>Brian AI</a>
+        <p>Industrial knowledge intelligence for refinery teams.</p>
+        <div><a href="#platform">Platform</a><a href="#impact">Impact</a></div>
       </footer>
     </div>
   )
