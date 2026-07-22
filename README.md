@@ -4,6 +4,14 @@ Evidence-backed industrial knowledge intelligence for refinery compliance and fa
 
 Live app: https://brian-ai-app.vercel.app
 
+## Submission Artifacts
+
+- [Pitch deck](docs/Brian_AI_pitch_deck.pptx)
+- [Demo video script](docs/DEMO_VIDEO_SCRIPT.md)
+- [Public links checklist](docs/PUBLIC_LINKS_CHECKLIST.md)
+- [Submission guide](docs/SUBMISSION.md)
+- [Implementation audit](docs/IMPLEMENTATION_AUDIT.md)
+
 ## Demo Flow
 
 1. Open the dashboard.

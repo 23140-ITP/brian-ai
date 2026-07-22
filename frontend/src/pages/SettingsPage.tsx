@@ -32,12 +32,12 @@ const judgingCriteria = [
 ]
 
 const submissionArtifacts = [
-  { label: 'Working prototype', value: 'Brian AI web app' },
-  { label: 'Pitch deck', value: 'docs/Brian_AI_pitch_deck.pptx' },
-  { label: 'Demo video script', value: 'docs/DEMO_VIDEO_SCRIPT.md' },
-  { label: 'Public links checklist', value: 'docs/PUBLIC_LINKS_CHECKLIST.md' },
-  { label: 'Submission runbook', value: 'docs/SUBMISSION.md' },
-  { label: 'Evidence audit', value: 'docs/IMPLEMENTATION_AUDIT.md' }
+  { label: 'Working prototype', value: 'Open Brian AI', href: 'https://brian-ai-app.vercel.app' },
+  { label: 'Pitch deck', value: 'Open pitch deck', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_pitch_deck.pptx' },
+  { label: 'Demo video script', value: 'Open recording script', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/DEMO_VIDEO_SCRIPT.md' },
+  { label: 'Public links checklist', value: 'Open checklist', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/PUBLIC_LINKS_CHECKLIST.md' },
+  { label: 'Submission runbook', value: 'Open runbook', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/SUBMISSION.md' },
+  { label: 'Evidence audit', value: 'Open audit', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/IMPLEMENTATION_AUDIT.md' }
 ]
 
 const MODEL_OPTIONS = [
@@ -250,7 +250,9 @@ export function SettingsPage() {
                   {submissionArtifacts.map((artifact) => (
                     <li key={artifact.label} className="flex flex-col gap-0.5">
                       <strong className="font-medium">{artifact.label}</strong>
-                      <span className="text-muted-foreground">{artifact.value}</span>
+                      <a className="text-primary underline-offset-4 hover:underline" href={artifact.href} target="_blank" rel="noreferrer">
+                        {artifact.value}
+                      </a>
                     </li>
                   ))}
                 </ul>

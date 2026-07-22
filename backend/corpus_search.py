@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import csv
+import io
 import re
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 from workspace import corpus_dir, is_demo_workspace
 
@@ -35,6 +39,12 @@ def unescape_pdf_text(raw: bytes) -> str:
 
 def extract_pdf_text(path: Path) -> str:
     content = path.read_bytes()
+    try:
+        extracted = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(content)).pages).strip()
+        if extracted:
+            return extracted
+    except (OSError, PdfReadError, ValueError):
+        pass
     parts = [unescape_pdf_text(match) for match in PDF_TEXT_RE.findall(content)]
     if parts:
         return "\n".join(parts)
