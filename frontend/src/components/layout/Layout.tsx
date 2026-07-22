@@ -15,7 +15,7 @@ export function Layout() {
   useEffect(() => {
     setApiIssue(
       workspace === 'demo'
-        ? 'The Demo workspace uses seeded, read-only refinery evidence.'
+        ? ''
         : dataMode === 'demo'
           ? 'The Live workspace needs a backend connection; no demo results will be substituted.'
           : ''

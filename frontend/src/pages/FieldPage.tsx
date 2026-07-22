@@ -263,12 +263,12 @@ export function FieldPage() {
   }
 
   return (
-    <main className={cn(
-      'min-h-screen bg-background p-4 text-foreground sm:p-6 lg:p-8',
-      sunlightMode && 'sunlight-mode'
-    )}>
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-        <header className="flex flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-screen bg-muted/40 text-foreground md:p-6">
+      <div className={cn(
+        'mx-auto flex min-h-screen w-full max-w-[430px] flex-col gap-4 bg-background p-4 md:min-h-[calc(100vh-3rem)] md:rounded-[2rem] md:border md:p-5 md:shadow-xl',
+        sunlightMode && 'sunlight-mode'
+      )}>
+        <header className="flex flex-col gap-4 rounded-xl border bg-card p-4">
           <div className="flex min-w-0 items-center gap-2">
             <Button asChild type="button" variant="ghost" size="icon" aria-label="Back to Command Center">
               <Link to="/">
@@ -278,7 +278,7 @@ export function FieldPage() {
             <h1 className="min-w-0 text-xl font-semibold tracking-tight">Brian AI Field - {tag}</h1>
             <Badge variant="outline">{demo ? 'Demo data' : 'Live data'}</Badge>
           </div>
-          <div className="flex flex-col gap-3 sm:items-end">
+          <div className="flex flex-col gap-3">
             {installPrompt && (
               <Button type="button" variant="outline" onClick={installFieldApp}>
                 <Download data-icon="inline-start" />
@@ -311,7 +311,7 @@ export function FieldPage() {
             <CardTitle>Equipment tag</CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <p className="max-w-full break-words text-center text-5xl font-bold tracking-tight sm:text-7xl lg:text-8xl">{tag}</p>
+            <p className="max-w-full break-words text-center text-6xl font-bold tracking-tight">{tag}</p>
           </CardContent>
           <CardFooter className="justify-center">
             <p className="text-center text-sm text-muted-foreground" aria-live="polite">
@@ -320,7 +320,7 @@ export function FieldPage() {
           </CardFooter>
         </Card>
 
-        <FieldGroup className="gap-3 sm:flex-row">
+        <FieldGroup className="gap-3">
           <Field>
             <FieldLabel htmlFor="field-nameplate-upload" className="sr-only">Upload nameplate image</FieldLabel>
             <Input

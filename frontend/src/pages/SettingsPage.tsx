@@ -22,24 +22,6 @@ import {
 import { api, getWriteToken, setWriteToken, SystemStatus } from '../services/api'
 import { useAppStore } from '../store/appStore'
 
-const judgingCriteria = [
-  'Relevance and problem understanding',
-  'Innovation and creativity',
-  'Technical implementation',
-  'Potential impact and scalability',
-  'Presentation and communication',
-  'Business viability'
-]
-
-const submissionArtifacts = [
-  { label: 'Working prototype', value: 'Open Brian AI', href: 'https://brian-ai-app.vercel.app' },
-  { label: 'Pitch deck', value: 'Open pitch deck', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_pitch_deck.pdf' },
-  { label: 'Demo video script', value: 'Open recording script', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/DEMO_VIDEO_SCRIPT.md' },
-  { label: 'Public links checklist', value: 'Open checklist', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/PUBLIC_LINKS_CHECKLIST.md' },
-  { label: 'Submission runbook', value: 'Open runbook', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/SUBMISSION.md' },
-  { label: 'Evidence audit', value: 'Open audit', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/IMPLEMENTATION_AUDIT.md' }
-]
-
 const MODEL_OPTIONS = [
   { value: 'openrouter/free', label: 'OpenRouter Free' }
 ]
@@ -221,44 +203,6 @@ export function SettingsPage() {
         </Card>
       )}
 
-      {demo && <Card>
-        <CardHeader>
-          <CardDescription>Hackathon submission readiness</CardDescription>
-          <CardTitle>Brian AI is packaged around the judging story.</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">Working prototype, pitch deck, recording script, and verification evidence are tracked as first-class submission artifacts for public-link submission.</p>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card size="sm">
-              <CardHeader>
-                <CardTitle>Judging fit</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
-                  {judgingCriteria.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
-            <Card size="sm">
-              <CardHeader>
-                <CardTitle>Artifacts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="flex flex-col gap-2 text-sm">
-                  {submissionArtifacts.map((artifact) => (
-                    <li key={artifact.label} className="flex flex-col gap-0.5">
-                      <strong className="font-medium">{artifact.label}</strong>
-                      <a className="text-primary underline-offset-4 hover:underline" href={artifact.href} target="_blank" rel="noreferrer">
-                        {artifact.value}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>}
     </div>
   )
 }
