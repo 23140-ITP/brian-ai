@@ -26,7 +26,7 @@ Dedicated recording script: `docs/DEMO_VIDEO_SCRIPT.md`.
    URL:
 
    ```text
-   Use the local URL printed by Vite, for example http://127.0.0.1:5173
+   https://brian-ai-app.vercel.app
    ```
 
    Show the six KPI cards, failure alert banner, ROI impact panel, and benchmark button. Emphasize that the dashboard is powered by the generated 20-document refinery corpus.
@@ -73,7 +73,7 @@ Dedicated recording script: `docs/DEMO_VIDEO_SCRIPT.md`.
    - Submission artifact checklist
    - The six hackathon judging criteria
 
-   Explain that the demo runs locally without paid credentials, while OpenRouter, OpenRouter vision OCR, Neo4j, public CORS, and public links can be enabled by environment variables after Railway/Vercel deployment.
+   Show that the deployed app reports OpenRouter generation, vision OCR, Neo4j AuraDB, public CORS, vector retrieval, write protection, and public links as ready.
 
 ## Pitch Deck Outline
 
@@ -104,7 +104,7 @@ Use 8 slides. Keep each slide visual and proof-oriented.
 
 5. Technical Architecture
 
-   Browser to FastAPI over REST/SSE. Backend services cover ingestion, cached retrieval, graph proxy, compliance checker, OpenRouter-ready OCR fallback, benchmark, alerts, and expert capture. Provider upgrade path: local retrieval to ChromaDB/OpenRouter, local graph to Neo4j AuraDB, and local nameplate reads to OpenRouter/Gemini vision.
+   Browser to FastAPI over REST/SSE. Backend services cover ingestion, SQLite vector retrieval, graph proxy, compliance checker, OpenRouter vision OCR, benchmark, alerts, and expert capture. The deployed provider path uses OpenRouter embeddings and generation, Neo4j AuraDB, and OpenRouter/Gemini vision.
 
 6. Business Impact
 

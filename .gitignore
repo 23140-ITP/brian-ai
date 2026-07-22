@@ -14,4 +14,8 @@ frontend/design-concept.png
 frontend/qa-*.png
 backend/.env
 .smoke-data/
+/browse-*.json*
+/browse-audit.jsonl
+/qa-*.png
+/qa-output/
 .gstack/

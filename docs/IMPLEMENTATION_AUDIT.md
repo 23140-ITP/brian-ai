@@ -1,6 +1,6 @@
 # Brian AI Implementation Audit
 
-This audit tracks the current local build against `implementation_plan.md`.
+This audit records the verified local and public build as of 2026-07-22.
 
 ## Proven Locally
 
@@ -8,7 +8,7 @@ This audit tracks the current local build against `implementation_plan.md`.
 - Frontend routes are code-split with `React.lazy`; the production build now emits separate page chunks and keeps the main app chunk under Vite's 500 kB warning threshold.
 - FastAPI backend with health, query, streaming query, ingest, graph proxy, compliance, alerts, benchmark, OCR, capture, and provider-status endpoints.
 - 20 generated refinery corpus files in `data/corpus/`.
-- Warm local cache in `data/cache.db` and seed manifest in `data/chroma_index/manifest.json`.
+- Warm SQLite vector cache in `data/vectors.db`, with OpenRouter embeddings enabled in production.
 - Unified local RAG path with citations and an `ERR_EMPTY_KB` SSE error contract.
 - Copilot UI handles `ERR_EMPTY_KB` with a knowledge-base initializing message and 30-second auto-retry.
 - Compliance checks stream clause progress in batches of 3.
@@ -60,16 +60,22 @@ Backend smoke checks currently cover:
 - `/api/capture` expert-session registration into `/api/documents`
 - empty-knowledge-base streaming error event
 
-`scripts/smoke_backend.py` packages the backend smoke checks as a repeatable pre-recording/pre-deploy command and removes its temporary ingest artifact from both `data/corpus` and `data/cache.db`.
+`scripts/smoke_backend.py` packages the backend smoke checks as a repeatable pre-recording/pre-deploy command, derives stream expectations from the current benchmark suite, writes only to the Live workspace, and removes its temporary ingest artifact from the Live corpus and vector database.
 
 `scripts/smoke_frontend.mjs` packages browser smoke checks for the built frontend. It launches Edge/Chrome through CDP, visits all eight routes, checks for route error boundaries and horizontal overflow, verifies Compliance -> Copilot handoff, Knowledge Graph path results, and Field PWA service worker cache population.
 
-Latest frontend build emits 12 JavaScript chunks, including separate route chunks such as `DashboardPage-*`, `KnowledgeGraphPage-*`, `FieldPage-*`, and a main `index-*` chunk of about 246 kB. The previous Vite large-chunk warning is no longer present.
+Latest frontend build emits separate route chunks such as `DashboardPage-*`, `KnowledgeGraphPage-*`, `FieldPage-*`, and `SettingsPage-*`; the main `index-*` chunk is 493.33 kB and builds without Vite's large-chunk warning.
 
-## Remaining External Gaps
+## Public Deployment Verified
 
-- OpenRouter live generation and live Gemini vision OCR calls require real `OPENROUTER_API_KEY`, `BRIAN_AI_USE_OPENROUTER=1`, and representative nameplate images.
-- Neo4j AuraDB write/read and heartbeat verification requires real `NEO4J_URI`, `NEO4J_USER`, and `NEO4J_PASSWORD`.
-- ChromaDB is represented by a committed seed manifest and local lexical retrieval path; a production ChromaDB collection has not been verified in this workspace.
-- Railway backend deployment, persistent `/data` volume seeding in Railway, and Vercel frontend deployment have not been executed against live cloud services.
-- Real mobile-device PWA install prompt verification has not been performed; local browser QA verifies service worker registration, Field shell cache population, and offline `/field` navigation under network emulation.
+- Vercel frontend: `https://brian-ai-app.vercel.app`.
+- Railway health: `https://brian-ai-production.up.railway.app/health` returns API version 1.1.0 with 20 corpus documents.
+- Production readiness reports OpenRouter generation, OpenRouter vision, Neo4j AuraDB, HTTPS CORS, 107 vector chunks across 20 files, protected writes, and public links ready.
+- Public query verification returns a cited P-204B answer; graph lookup returns three regulation paths; compliance returns 18 rows.
+- Local verification passes 20 backend tests, backend compilation, backend smoke, and the frontend production build.
+
+## Remaining Submission Tasks
+
+- Record and publish the demo video; the recording script is complete but the public video URL still needs to be added to `docs/PUBLIC_LINKS_CHECKLIST.md`.
+- Real mobile-device PWA install prompt verification has not been performed; browser QA verifies service worker registration, Field shell cache population, and offline `/field` navigation under network emulation.
+- Representative real-world nameplate images should be retained as pilot evaluation evidence even though the production vision provider is configured.
