@@ -7,6 +7,7 @@ const FRONTEND_URL = process.env.BRIAN_AI_FRONTEND_URL || 'http://127.0.0.1:5182
 const DEBUG_PORT = Number(process.env.BRIAN_AI_CDP_PORT || 9231)
 const SCREENSHOT_DIR = process.env.BRIAN_AI_SMOKE_SCREENSHOT_DIR || path.join('docs', 'frontend-smoke')
 const FIELD_CACHE_NAME = 'brian-ai-field-v5-public-site'
+const WORKSPACE_STORAGE_KEY = 'brian-ai-workspace'
 
 const ROUTES = [
   ['/', 'Know what happened'],
@@ -92,6 +93,10 @@ async function evaluate(send, expression) {
   return result.result.value
 }
 
+async function setWorkspace(send, workspace) {
+  await evaluate(send, `localStorage.setItem(${JSON.stringify(WORKSPACE_STORAGE_KEY)}, ${JSON.stringify(workspace)})`)
+}
+
 async function inspectRoute(send, route, expectedText) {
   await send('Page.navigate', { url: `${FRONTEND_URL}${route}?smoke=${Date.now()}` })
   await delay(1800)
@@ -120,6 +125,7 @@ async function inspectRoute(send, route, expectedText) {
 }
 
 async function clickComplianceHandoff(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/compliance?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
@@ -144,6 +150,7 @@ async function clickComplianceHandoff(send) {
 }
 
 async function clickGraphPath(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/knowledge-graph?smoke=${Date.now()}` })
   await delay(2200)
   const result = await evaluate(send, `
@@ -171,6 +178,7 @@ async function clickGraphPath(send) {
 }
 
 async function verifyFieldPwa(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/field?smoke=${Date.now()}` })
   await delay(3200)
   const result = await evaluate(send, `
@@ -195,6 +203,7 @@ async function verifyFieldPwa(send) {
 }
 
 async function verifyMobileShell(send) {
+  await setWorkspace(send, 'demo')
   await send('Emulation.setDeviceMetricsOverride', {
     width: 375,
     height: 812,
@@ -234,6 +243,7 @@ async function verifyMobileShell(send) {
 }
 
 async function verifyDashboardDialog(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
@@ -256,6 +266,18 @@ async function verifyDashboardDialog(send) {
 }
 
 async function verifyCaptureStart(send) {
+  await setWorkspace(send, 'demo')
+  await send('Page.navigate', { url: `${FRONTEND_URL}/capture?smoke=${Date.now()}` })
+  await delay(2200)
+  const demoProtected = await evaluate(send, `
+    (() => {
+      const text = document.body.textContent || ''
+      return text.includes('Demo workspace is read-only')
+    })()
+  `)
+  if (!demoProtected) throw new Error('Expert Capture demo write protection missing')
+
+  await setWorkspace(send, 'live')
   await send('Page.navigate', { url: `${FRONTEND_URL}/capture?smoke=${Date.now()}` })
   await delay(2200)
   const result = await evaluate(send, `
@@ -269,21 +291,29 @@ async function verifyCaptureStart(send) {
       return { ok: Boolean(answer), question: answer?.getAttribute('aria-label') || '' }
     })()
   `)
+  await setWorkspace(send, 'demo')
   if (!result.ok) throw new Error(`Expert Capture start smoke failed: ${JSON.stringify(result)}`)
   return result
 }
 
 async function verifyGraphDocumentHandoff(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/knowledge-graph?smoke=${Date.now()}` })
   await delay(2200)
   const result = await evaluate(send, `
     (async () => {
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-      const node = document.querySelector('[role="button"][aria-label="Select P-204B"]')
-      if (!node) return { ok: false, reason: 'P-204B graph node missing' }
+      const node = document.querySelector('[role="button"][aria-label^="Select P-204B"]')
+      if (!node) return {
+        ok: false,
+        reason: 'P-204B graph node missing',
+        workspace: localStorage.getItem('brian-ai-workspace'),
+        text: (document.body.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 300),
+        graphLabels: [...document.querySelectorAll('[role="button"][aria-label]')].map((item) => item.getAttribute('aria-label')).slice(0, 10)
+      }
       node.dispatchEvent(new MouseEvent('click', { bubbles: true }))
       await wait(100)
-      const filename = 'Pump-P204-Vibration-Analysis-2024.pdf'
+      const filename = 'Incident-2023-07-15-P204B-Seal-Failure.pdf'
       const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.includes(filename))
       if (!button) return { ok: false, reason: 'related document button missing' }
       button.click()
@@ -300,6 +330,7 @@ async function verifyGraphDocumentHandoff(send) {
 }
 
 async function verifyFieldInteraction(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/field?smoke=${Date.now()}` })
   await delay(1800)
   const result = await evaluate(send, `
@@ -330,6 +361,7 @@ async function verifyFieldInteraction(send) {
 }
 
 async function verifyDesktopSidebar(send) {
+  await setWorkspace(send, 'demo')
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
   await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
   await delay(1800)
@@ -352,6 +384,7 @@ async function verifyDesktopSidebar(send) {
 }
 
 async function verifyLandingCta(send) {
+  await setWorkspace(send, 'demo')
   await send('Page.navigate', { url: `${FRONTEND_URL}/?smoke=${Date.now()}` })
   await delay(1200)
   const result = await evaluate(send, `
