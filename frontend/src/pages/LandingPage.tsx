@@ -68,7 +68,7 @@ export function LandingPage() {
                 Open demo <ArrowRight data-icon="inline-end" aria-hidden="true" />
               </Button>
               <Button asChild variant="outline" className="home-button secondary-light">
-                <a href="#platform">See how it works</a>
+                <a href="https://youtu.be/t_bUzOsV0ag" target="_blank" rel="noreferrer">Watch demo</a>
               </Button>
             </div>
           </div>

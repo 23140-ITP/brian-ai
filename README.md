@@ -6,7 +6,7 @@ Brian AI turns fragmented plant documents, compliance clauses, maintenance recor
 
 ![Brian AI technical architecture](./brian-ai-technical-architecture.png)
 
-[Launch the live app](https://brian-ai-app.vercel.app/app) · [Read the pitch deck](docs/Brian_AI_pitch_deck.pdf) · [Check API health](https://brian-ai-production.up.railway.app/health)
+[Launch the live app](https://brian-ai-app.vercel.app/app) · [Watch the demo](https://youtu.be/t_bUzOsV0ag) · [Read the pitch deck](docs/Brian_AI_pitch_deck.pdf) · [Check API health](https://brian-ai-production.up.railway.app/health)
 
 ## Why this matters
 
@@ -277,6 +277,7 @@ assets/readme/       Fresh desktop screenshots from the deployed app
 
 ## Submission assets
 
+- [Demo video](https://youtu.be/t_bUzOsV0ag)
 - [10-page pitch deck](docs/Brian_AI_pitch_deck.pdf)
 - [Public links checklist](docs/PUBLIC_LINKS_CHECKLIST.md)
 
