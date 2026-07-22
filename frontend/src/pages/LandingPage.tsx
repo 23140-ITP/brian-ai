@@ -31,23 +31,6 @@ const sources = [
   ['Knowledge graph', 'Every source connected to the asset', GitBranch],
 ] as const
 
-const prototypeResults = [
-  ['3.5 hrs', 'evidence-search time saved per scenario'],
-  ['20/20', 'seeded benchmark checks passed'],
-  ['18', 'OISD and PESO clauses evaluated'],
-  ['2', 'critical compliance gaps surfaced'],
-  ['3', 'recurring failure patterns made actionable'],
-  ['107', 'indexed chunks across 20 files'],
-] as const
-
-const judgingProof = [
-  ['Innovation', '25%', 'One evidence layer powers cited answers, failure intelligence, compliance checks, graph reasoning, field access, and expert capture.'],
-  ['Business impact', '25%', 'The seeded scenario saves 3.5 hours of evidence search, surfaces two critical gaps, and makes three failure patterns actionable.'],
-  ['Technical excellence', '20%', 'Hybrid retrieval, provenance, confidence scoring, entity extraction, graph traversal, streaming workflows, and deterministic fallbacks.'],
-  ['Scalability', '15%', 'Provider-independent APIs, cached indexing, workspace isolation, batch processing, and an optional Neo4j adapter.'],
-  ['User experience', '15%', 'A desktop command center and field PWA put source evidence beside every answer, warning, and remediation.'],
-] as const
-
 export function LandingPage() {
   const navigate = useNavigate()
   const setWorkspace = useAppStore((state) => state.setWorkspace)
@@ -226,20 +209,6 @@ export function LandingPage() {
           </Button>
         </section>
 
-        <section className="home-section proof-section" aria-labelledby="proof-title">
-          <header className="home-section-heading">
-            <span>Measured prototype results</span>
-            <h2 id="proof-title">Evidence a judge can verify.</h2>
-            <p>Every result below comes from Brian AI's seeded refinery corpus and repeatable evaluation suite.</p>
-          </header>
-          <div className="proof-grid">
-            {prototypeResults.map(([value, label]) => (
-              <article key={label}><strong>{value}</strong><span>{label}</span></article>
-            ))}
-          </div>
-          <p className="prototype-note">Prototype indicators, not customer traction or production claims.</p>
-        </section>
-
         <section className="home-section flagship-section" aria-labelledby="flagship-title">
           <header className="home-section-heading">
             <span>Evidence to action</span>
@@ -304,18 +273,6 @@ export function LandingPage() {
               <p>A five-question interview, human review, structured ingestion, and automatic graph refresh preserve experience before it leaves the plant.</p>
               <Button type="button" variant="link" className="text-action" onClick={() => navigate('/capture')}>Capture expert knowledge <ArrowRight data-icon="inline-end" aria-hidden="true" /></Button>
             </article>
-          </div>
-        </section>
-
-        <section className="home-section judging-section" aria-labelledby="judging-title">
-          <header className="home-section-heading">
-            <span>Why Brian AI is different</span>
-            <h2 id="judging-title">Built against the complete judging rubric.</h2>
-          </header>
-          <div className="judging-grid">
-            {judgingProof.map(([criterion, weight, proof]) => (
-              <article key={criterion}><div><strong>{criterion}</strong><span>{weight}</span></div><p>{proof}</p></article>
-            ))}
           </div>
         </section>
 
