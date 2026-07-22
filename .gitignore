@@ -10,6 +10,7 @@ data/
 docs/*
 !docs/*.md
 !docs/*.pptx
+!docs/*.mp4
 frontend/design-concept.png
 frontend/qa-*.png
 backend/.env

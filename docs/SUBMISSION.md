@@ -12,7 +12,7 @@ The prototype is built to demonstrate the judging criteria listed on the hackath
 - Innovation and creativity: one command center combines RAG, graph paths, compliance evidence, failure alerts, Field PWA, and expert capture.
 - Technical implementation: React, FastAPI, streaming APIs, corpus ingestion, local cached retrieval, graph proxy, compliance SSE, optional OpenRouter/Gemini vision OCR with local fallback, and PWA field mode.
 - Potential impact and scalability: time-to-answer reduction, proactive compliance gaps, failure-pattern alerts, warm index cache, provider readiness, and Railway/Vercel deployment path.
-- Presentation and communication: the demo video script proves the system works with citations instead of describing a future product.
+- Presentation and communication: the narrated demo video and recording script show the working prototype, evidence flow, architecture, and pilot case instead of describing a future product.
 - Business viability: pilot path through plant corpus onboarding, provider enablement, deployment, and measurable operational KPIs.
 
 ## Demo Script
@@ -80,6 +80,7 @@ Dedicated recording script: `docs/DEMO_VIDEO_SCRIPT.md`.
 Generated deck:
 
 - PowerPoint: `docs/Brian_AI_pitch_deck.pptx`
+- Narrated demo video: `docs/Brian_AI_demo_video.mp4`
 - Local rendered preview PNGs (generated, not committed): `docs/pitch-deck-preview-final/`
 - Demo video script: `docs/DEMO_VIDEO_SCRIPT.md`
 - Public links checklist: `docs/PUBLIC_LINKS_CHECKLIST.md`
