@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+import asyncio
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
 import database  # noqa: E402
+import main  # noqa: E402
+from workspace import current_workspace  # noqa: E402
 
 
 class FakeResult:
@@ -57,6 +60,28 @@ class FakeDriver:
 
 
 class Neo4jAdapterTests(unittest.IsolatedAsyncioTestCase):
+    async def test_startup_syncs_demo_and_live_workspaces(self) -> None:
+        synced_workspaces: list[str] = []
+
+        async def record_sync() -> bool:
+            synced_workspaces.append(current_workspace())
+            return True
+
+        async def keepalive() -> None:
+            await asyncio.Event().wait()
+
+        with (
+            patch.object(main, "neo4j_keepalive_enabled", return_value=True),
+            patch.object(main, "create_schema", new=AsyncMock(return_value={"ok": True})),
+            patch.object(main, "refresh_graph_store", side_effect=record_sync),
+            patch.object(main, "neo4j_keepalive_loop", side_effect=keepalive),
+        ):
+            async with main.lifespan(main.app):
+                pass
+
+        self.assertEqual(synced_workspaces, ["demo", "live"])
+        self.assertEqual(current_workspace(), "demo")
+
     async def test_graph_is_synced_and_loaded_through_driver(self) -> None:
         driver = FakeDriver()
         nodes = [{"id": "P-204B", "label": "Pump", "type": "Equipment", "score": 8, "details": {"health": "Watchlist"}}]

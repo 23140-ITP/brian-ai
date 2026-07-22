@@ -374,6 +374,30 @@ async function verifyLandingCta(send) {
   return result
 }
 
+async function verifyLiveAccessPrompt(send) {
+  await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
+  await delay(1200)
+  await evaluate(send, `
+    localStorage.setItem('brian-ai-workspace', 'live')
+    sessionStorage.removeItem('brian-ai-write-token')
+  `)
+  await send('Page.navigate', { url: `${FRONTEND_URL}/app?smoke=${Date.now()}` })
+  await delay(1800)
+  const result = await evaluate(send, `
+    (() => {
+      const text = document.body.textContent || ''
+      localStorage.setItem('brian-ai-workspace', 'demo')
+      return {
+        ok: text.includes('Live access key required') && !text.includes('workspace request failed: /api/'),
+        actionable: text.includes('Open Settings'),
+        leakedEndpoint: text.includes('workspace request failed: /api/'),
+      }
+    })()
+  `)
+  if (!result.ok || !result.actionable) throw new Error(`Live access prompt smoke failed: ${JSON.stringify(result)}`)
+  return result
+}
+
 async function screenshot(send, filePath) {
   const result = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true })
   fs.mkdirSync(path.dirname(filePath), { recursive: true })
@@ -397,6 +421,12 @@ async function main() {
     const { ws, send, exceptions } = await connectToTarget(target)
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
 
+    if (process.argv.includes('--live-access-only')) {
+      const liveAccessPrompt = await verifyLiveAccessPrompt(send)
+      console.log(JSON.stringify({ liveAccessPrompt }, null, 2))
+      return
+    }
+
     const routes = []
     for (const [route, expectedText] of ROUTES) routes.push(await inspectRoute(send, route, expectedText))
     const landingCta = await verifyLandingCta(send)
@@ -410,11 +440,12 @@ async function main() {
     const fieldInteraction = await verifyFieldInteraction(send)
     const desktopSidebar = await verifyDesktopSidebar(send)
     const mobile = await verifyMobileShell(send)
+    const liveAccessPrompt = await verifyLiveAccessPrompt(send)
     await send('Target.closeTarget', { targetId: target.id }).catch(() => undefined)
     ws.close()
 
     if (exceptions.length) throw new Error(`Browser exceptions: ${exceptions.join('\\n')}`)
-    console.log(JSON.stringify({ routes: routes.length, landingCta, compliance, graph, fieldPwa, dashboardDialog, capture, graphDocument, fieldInteraction, desktopSidebar, mobile, screenshotDir: SCREENSHOT_DIR }, null, 2))
+    console.log(JSON.stringify({ routes: routes.length, landingCta, compliance, graph, fieldPwa, dashboardDialog, capture, graphDocument, fieldInteraction, desktopSidebar, mobile, liveAccessPrompt, screenshotDir: SCREENSHOT_DIR }, null, 2))
   } finally {
     child.kill()
   }

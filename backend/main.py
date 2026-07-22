@@ -23,7 +23,7 @@ from rag.agent import run_query
 from rag.streaming import stream_query_events
 from request_guard import enforce_rate_limit, read_limited_upload, require_write_access
 from system_status import provider_status
-from workspace import WorkspaceMiddleware, current_workspace
+from workspace import WORKSPACES, WorkspaceMiddleware, current_workspace, reset_workspace, set_workspace
 
 settings = get_settings()
 APP_VERSION = "1.1.0"
@@ -34,7 +34,12 @@ async def lifespan(_: FastAPI):
     keepalive_task: asyncio.Task | None = None
     if neo4j_keepalive_enabled():
         await create_schema()
-        await refresh_graph_store()
+        for workspace in sorted(WORKSPACES):
+            token = set_workspace(workspace)
+            try:
+                await refresh_graph_store()
+            finally:
+                reset_workspace(token)
         keepalive_task = asyncio.create_task(neo4j_keepalive_loop())
     try:
         yield

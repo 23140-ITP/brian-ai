@@ -19,10 +19,17 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 export const dataMode: 'live' | 'demo' = API_BASE ? 'live' : 'demo'
 export const API_STATUS_EVENT = 'brian-ai-api-status'
 const WRITE_TOKEN_KEY = 'brian-ai-write-token'
+const LIVE_ACCESS_REQUIRED = 'Live access key required. Open Settings, enter the Operator key, then select Verify Live access.'
 
-function reportFailure(path: string) {
+function reportFailure(path: string, detail?: string) {
   if (dataMode === 'live') {
-    window.dispatchEvent(new CustomEvent(API_STATUS_EVENT, { detail: `${readWorkspace() === 'live' ? 'Live' : 'Demo'} workspace request failed: ${path}` }))
+    window.dispatchEvent(new CustomEvent(API_STATUS_EVENT, { detail: detail || `${readWorkspace() === 'live' ? 'Live' : 'Demo'} workspace request failed: ${path}` }))
+  }
+}
+
+function reportSuccess() {
+  if (dataMode === 'live' && readWorkspace() === 'live') {
+    window.dispatchEvent(new CustomEvent(API_STATUS_EVENT, { detail: '' }))
   }
 }
 
@@ -159,10 +166,20 @@ async function getJson<T>(path: string, demoFallback: T, liveFallback: T): Promi
     return workspace === 'demo' ? demoFallback : liveFallback
   }
 
+  if (workspace === 'live' && !getWriteToken()) {
+    reportFailure(path, LIVE_ACCESS_REQUIRED)
+    return liveFallback
+  }
+
   try {
     const response = await fetch(`${API_BASE}${path}`, { headers: requestHeaders() })
-    if (!response.ok) throw new Error(response.statusText)
-    return (await response.json()) as T
+    if (!response.ok) {
+      reportFailure(path, response.status === 401 ? LIVE_ACCESS_REQUIRED : undefined)
+      return workspace === 'demo' ? demoFallback : liveFallback
+    }
+    const result = (await response.json()) as T
+    reportSuccess()
+    return result
   } catch {
     reportFailure(path)
     return workspace === 'demo' ? demoFallback : liveFallback
@@ -174,6 +191,12 @@ async function streamBenchmarkRows(onRows?: (rows: BenchmarkResult[]) => void): 
     const rows = readWorkspace() === 'demo' ? benchmarkResults : []
     onRows?.(rows)
     return rows
+  }
+
+  if (readWorkspace() === 'live' && !getWriteToken()) {
+    reportFailure('/api/benchmark', LIVE_ACCESS_REQUIRED)
+    onRows?.([])
+    return []
   }
 
   const response = await fetch(`${API_BASE}/api/benchmark`, { headers: requestHeaders({ Accept: 'text/event-stream' }) })
@@ -204,6 +227,7 @@ async function streamBenchmarkRows(onRows?: (rows: BenchmarkResult[]) => void): 
   }
 
   if (!rows.length) throw new Error('Benchmark stream returned no rows')
+  reportSuccess()
   return rows
 }
 
