@@ -1,29 +1,43 @@
 import {
-  Activity,
   ArrowRight,
-  Bot,
   BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
-  Clock3,
   FileSearch,
   GitBranch,
-  IndianRupee,
-  Radio,
   ShieldCheck,
   Sparkles,
   Wrench,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/store/appStore'
 
 const sources = [
   ['P&IDs', FileSearch],
   ['Work orders', Wrench],
-  ['Inspection records', ClipboardCheck],
-  ['OISD / PESO', ShieldCheck],
+  ['Inspections', ClipboardCheck],
+  ['OISD and PESO', ShieldCheck],
   ['Expert notes', Sparkles],
   ['Knowledge graph', GitBranch],
+] as const
+
+const capabilities = [
+  {
+    icon: FileSearch,
+    title: 'Ask across plant evidence',
+    body: 'Brian retrieves the records behind an answer, not just the nearest paragraph.',
+  },
+  {
+    icon: GitBranch,
+    title: 'Connect equipment history',
+    body: 'Assets, incidents, regulations, and expert knowledge resolve into one traceable context.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Act with the source attached',
+    body: 'Each recommendation carries citations your operations and compliance teams can inspect.',
+  },
 ] as const
 
 export function LandingPage() {
@@ -47,152 +61,105 @@ export function LandingPage() {
           Brian AI
         </a>
         <div className="home-nav-links">
-          <a href="#platform">Platform</a>
-          <a href="#impact">Impact</a>
-          <button type="button" className="home-button compact" onClick={tryApp}>
-            Open workspace <ArrowRight size={14} aria-hidden="true" />
-          </button>
+          <Button asChild variant="ghost" className="home-nav-link"><a href="#platform">Platform</a></Button>
+          <Button asChild variant="ghost" className="home-nav-link"><a href="#impact">Impact</a></Button>
+          <Button type="button" className="home-button compact" onClick={tryApp}>
+            Open workspace <ArrowRight data-icon="inline-end" aria-hidden="true" />
+          </Button>
         </div>
       </nav>
 
       <main id="main-content" tabIndex={-1} className="home-main outline-none">
         <section id="top" className="home-hero" aria-labelledby="home-title">
-          <div className="home-eyebrow"><span>Built for refinery teams</span></div>
-          <h1 id="home-title">Know what happened<br />across your refinery.</h1>
-          <p>
-            Brian unifies plant documents, work orders, inspection records, regulations, and expert knowledge into one evidence-backed memory your team can act on.
-          </p>
-          <div className="source-rail" aria-label="Knowledge sources">
+          <div className="home-hero-copy">
+            <div className="home-eyebrow">Built for refinery teams</div>
+            <h1 id="home-title">Know what happened across your refinery.</h1>
+            <p>Brian connects plant records and expert knowledge, then returns evidence your team can verify and act on.</p>
+            <div className="home-hero-actions">
+              <Button type="button" className="home-button" onClick={tryApp}>
+                Open demo <ArrowRight data-icon="inline-end" aria-hidden="true" />
+              </Button>
+              <Button asChild variant="outline" className="home-button secondary-light">
+                <a href="#platform">See how it works</a>
+              </Button>
+            </div>
+          </div>
+          <figure className="home-hero-visual">
+            <img
+              src="/brand/brian-knowledge-map.webp"
+              width="1400"
+              height="1046"
+              fetchPriority="high"
+              alt="Refinery records feeding a connected knowledge core and a verified action"
+            />
+          </figure>
+        </section>
+
+        <section className="source-band" aria-labelledby="source-title">
+          <h2 id="source-title">One memory across every plant source</h2>
+          <div className="source-rail">
             {sources.map(([label, Icon]) => (
-              <span key={label}><Icon size={13} aria-hidden="true" /> {label}</span>
+              <span key={label}><Icon size={15} aria-hidden="true" /> {label}</span>
             ))}
           </div>
-          <div className="home-hero-actions">
-            <button type="button" className="home-button" onClick={tryApp}>
-              <Sparkles size={15} aria-hidden="true" /> Prove it with live evidence
-            </button>
-            <button type="button" className="home-button secondary-light" onClick={tryApp}>
-              <Bot size={15} aria-hidden="true" /> Ask Brian
-            </button>
-          </div>
-          <small>Demo workspace · Bharat Refinery</small>
         </section>
 
-        <section className="home-metrics" aria-label="Brian AI performance">
-          <div><strong>20/20</strong><span>documents unified</span></div>
-          <div><strong>87.7%</strong><span>knowledge linked</span></div>
-          <div><strong>3/5</strong><span>clauses compliant</span></div>
-          <div><strong>3</strong><span>failure alerts</span></div>
-          <div><strong>2.4s</strong><span>answer latency</span></div>
-          <div><strong>92%</strong><span>benchmark accuracy</span></div>
-        </section>
-
-        <section id="platform" className="home-section learns-section" aria-labelledby="learns-title">
-          <header className="home-section-heading">
-            <h2 id="learns-title">Brian learns while your plant works.</h2>
-            <p>Every drawing, inspection, work order, and expert observation becomes usable memory with its source attached.</p>
+        <section id="platform" className="home-section evidence-section" aria-labelledby="evidence-title">
+          <header className="home-section-heading align-left">
+            <h2 id="evidence-title">From fragmented records to one verified action.</h2>
+            <p>Brian combines retrieval, graph context, and deterministic checks before it presents an answer.</p>
           </header>
-          <div className="knowledge-flow">
-            <article>
-              <span>Operations</span>
-              <p><Radio size={14} aria-hidden="true" /> P-204B vibration above baseline</p>
-              <p><Clock3 size={14} aria-hidden="true" /> Shift note added 12 minutes ago</p>
-            </article>
-            <article>
-              <span>Maintenance</span>
-              <p><Wrench size={14} aria-hidden="true" /> Seal replacement history linked</p>
-              <p><FileSearch size={14} aria-hidden="true" /> OEM manual section matched</p>
-            </article>
-            <article>
-              <span>Compliance</span>
-              <p><ShieldCheck size={14} aria-hidden="true" /> 2 critical gaps surfaced</p>
-              <p><ClipboardCheck size={14} aria-hidden="true" /> Evidence matrix refreshed</p>
-            </article>
-            <article>
-              <span>Engineering</span>
-              <p><GitBranch size={14} aria-hidden="true" /> 73 nodes connected</p>
-              <p><CheckCircle2 size={14} aria-hidden="true" /> Failure pattern confirmed</p>
-            </article>
-            <div className="knowledge-node" aria-label="Brian unified memory"><BrainCircuit size={29} /></div>
-          </div>
+          <figure className="evidence-visual">
+            <img
+              src="/brand/brian-evidence-flow.webp"
+              width="1600"
+              height="900"
+              loading="lazy"
+              decoding="async"
+              alt="Plant documents flowing through a knowledge engine into a verified maintenance action"
+            />
+            <figcaption>Source evidence stays visible from the first query to the final action.</figcaption>
+          </figure>
         </section>
 
-        <section className="home-section work-section" aria-labelledby="work-title">
-          <header className="home-section-heading">
-            <h2 id="work-title">Every answer, <span>one place.</span></h2>
-            <p>Ask what happened, build on existing evidence, and catch problems before the next shift inherits them.</p>
-          </header>
-
-          <div className="feature-list">
-            <article className="home-feature">
-              <div className="feature-copy">
-                <span>01</span>
-                <h3>Query your plant</h3>
-                <p>Ask in plain language. Brian traces the answer through incidents, manuals, work orders, and field notes before responding.</p>
-                <button type="button" className="text-action" onClick={tryApp}>Run the evidence query <ArrowRight size={14} aria-hidden="true" /></button>
-              </div>
-              <div className="product-canvas query-canvas">
-                <div className="canvas-bar"><span><BrainCircuit size={15} aria-hidden="true" /> Brian</span><em>Evidence mode</em></div>
-                <div className="message-row user-question">What caused the P-204B seal failure?</div>
-                <div className="message-row brian-answer">
-                  <strong>Brian</strong>
-                  <p>A recurring seal degradation pattern followed elevated vibration and delayed alignment correction. Three linked records support this finding.</p>
-                  <div className="citation-row"><span>Incident report</span><span>Work orders</span><span>Vibration analysis</span></div>
-                </div>
-              </div>
-            </article>
-
-            <article className="home-feature reverse">
-              <div className="feature-copy">
-                <span>02</span>
-                <h3>Nothing stays siloed</h3>
-                <p>Documents, equipment, regulations, and people resolve into one connected operating picture instead of separate folders.</p>
-                <button type="button" className="text-action" onClick={tryApp}>Explore the knowledge graph <ArrowRight size={14} aria-hidden="true" /></button>
-              </div>
-              <div className="product-canvas activity-canvas">
-                <div className="canvas-bar"><span><Activity size={15} aria-hidden="true" /> Unified activity</span><em>Live</em></div>
-                <div className="activity-row"><FileSearch size={17} aria-hidden="true" /><div><strong>PID-CDU-001.pdf</strong><span>Document indexed and linked</span></div><small>now</small></div>
-                <div className="activity-row"><GitBranch size={17} aria-hidden="true" /><div><strong>P-204B failure chain</strong><span>47 evidence relationships</span></div><small>2m</small></div>
-                <div className="activity-row"><ClipboardCheck size={17} aria-hidden="true" /><div><strong>OISD-116-4.2</strong><span>Fired Heater — Shutdown</span></div><small>8m</small></div>
-              </div>
-            </article>
-
-            <article className="home-feature">
-              <div className="feature-copy">
-                <span>03</span>
-                <h3>It flags the next problem</h3>
-                <p>Brian connects recurring symptoms across years of plant history and puts the supporting evidence beside the alert.</p>
-                <button type="button" className="text-action" onClick={tryApp}>Open the evidence matrix <ArrowRight size={14} aria-hidden="true" /></button>
-              </div>
-              <div className="product-canvas alert-canvas">
-                <div className="canvas-bar"><span><Radio size={15} aria-hidden="true" /> Open loops</span><em>3 active</em></div>
-                <div className="priority-alert">
-                  <span>High priority</span>
-                  <strong>P-204B · Recurring seal degradation pattern</strong>
-                  <p>Evidence links the current vibration signature to two previous seal failures and an overdue alignment action.</p>
-                </div>
-                <div className="alert-task"><CheckCircle2 size={16} aria-hidden="true" /><span>Review vibration trend before next shift</span></div>
-                <div className="alert-task"><CheckCircle2 size={16} aria-hidden="true" /><span>Attach missing PSV test certificate</span></div>
-              </div>
-            </article>
+        <section className="home-section capability-section" aria-labelledby="capability-title">
+          <div className="capability-intro">
+            <h2 id="capability-title">Built for questions with consequences.</h2>
+            <p>Operational answers must be fast, but they also need to survive review.</p>
+            <Button type="button" variant="link" className="text-action" onClick={tryApp}>
+              Ask Brian <ArrowRight data-icon="inline-end" aria-hidden="true" />
+            </Button>
+          </div>
+          <div className="capability-ledger">
+            {capabilities.map(({ icon: Icon, title, body }) => (
+              <article key={title}>
+                <Icon aria-hidden="true" />
+                <div><h3>{title}</h3><p>{body}</p></div>
+                <CheckCircle2 aria-label="Included" />
+              </article>
+            ))}
           </div>
         </section>
 
         <section id="impact" className="impact-band" aria-labelledby="impact-title">
           <div>
-            <span>Measured business impact</span>
-            <h2 id="impact-title">Evidence in seconds, not hours.</h2>
+            <span>Operational impact</span>
+            <h2 id="impact-title">Move from evidence search to verified action.</h2>
           </div>
-          <div className="impact-stat"><strong>3.5 hrs</strong><span>saved per evidence search</span></div>
-          <div className="impact-stat"><strong><IndianRupee size={24} aria-hidden="true" /> Lower</strong><span>audit and downtime exposure</span></div>
-          <button type="button" className="home-button inverse" onClick={tryApp}>See the evidence <ArrowRight size={15} aria-hidden="true" /></button>
+          <div className="impact-stat"><strong>Faster</strong><span>incident investigation</span></div>
+          <div className="impact-stat"><strong>Traceable</strong><span>answers and decisions</span></div>
+          <Button type="button" className="home-button inverse" onClick={tryApp}>
+            Explore demo <ArrowRight data-icon="inline-end" aria-hidden="true" />
+          </Button>
         </section>
 
         <section className="home-final-cta">
           <BrainCircuit size={34} aria-hidden="true" />
           <h2>Put your plant knowledge to work.</h2>
-          <p>Open Brian and ask the question your next shift needs answered.</p>
-          <button type="button" className="home-button" onClick={tryApp}>Open Brian AI <ArrowRight size={15} aria-hidden="true" /></button>
+          <p>Ask the question your next shift needs answered.</p>
+          <Button type="button" className="home-button" onClick={tryApp}>
+            Open workspace <ArrowRight data-icon="inline-end" aria-hidden="true" />
+          </Button>
         </section>
       </main>
 

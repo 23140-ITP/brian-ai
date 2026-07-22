@@ -357,7 +357,7 @@ async function verifyLandingCta(send) {
   const result = await evaluate(send, `
     (async () => {
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-      const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.includes('Prove it with live evidence'))
+      const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.includes('Open demo'))
       if (!button) return { ok: false, reason: 'primary homepage CTA missing' }
       button.click()
       for (let i = 0; i < 40; i += 1) {
