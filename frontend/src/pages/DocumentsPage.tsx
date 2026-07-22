@@ -79,7 +79,11 @@ export function DocumentsPage() {
       setIngestStatus('success')
       setMessage(`Ingested ${result.doc_id}: ${result.chunks} chunks, ${result.entities} entities, ${result.alerts_triggered} alert.`)
       setReceipt(result.impact_receipt)
-      setLibrary(await api.documents())
+      if (demo) {
+        setLibrary((current) => [{ id: `demo-${file.name}`, filename: file.name, docType: result.impact_receipt.document.docType, chunks: result.chunks, ingestedAt: result.ingested_at || '2026-07-22' }, ...current])
+      } else {
+        setLibrary(await api.documents())
+      }
     } catch (error) {
       setIngestStatus('error')
       setMessage(error instanceof Error ? error.message : 'Backend ingest is unavailable. Check the operator key and retry.')
@@ -90,13 +94,13 @@ export function DocumentsPage() {
   }
 
   const ingesting = ingestStatus === 'progress'
-  const uploadDisabled = demo || ingesting
+  const uploadDisabled = ingesting
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Document Intelligence</h1>
-        <p className="text-sm text-muted-foreground">{demo ? 'Explore the seeded refinery corpus. Switch to Live to upload evidence.' : 'Upload PDFs or CSVs and Brian AI updates RAG, graph links, compliance evidence, and alerts.'}</p>
+        <p className="text-sm text-muted-foreground">{demo ? 'Explore the seeded refinery corpus and simulate document ingestion locally.' : 'Upload PDFs or CSVs and Brian AI updates RAG, graph links, compliance evidence, and alerts.'}</p>
       </header>
 
       <Card>
@@ -104,7 +108,7 @@ export function DocumentsPage() {
           <CardTitle>
             <h2>Ingest a document</h2>
           </CardTitle>
-            <CardDescription>{demo ? 'The Demo workspace is read-only.' : 'Add source material to the Live knowledge corpus.'}</CardDescription>
+            <CardDescription>{demo ? 'Uploads produce a local, hard-coded impact response without changing live data.' : 'Add source material to the Live knowledge corpus.'}</CardDescription>
         </CardHeader>
         <CardContent>
           <FieldGroup>
@@ -129,8 +133,8 @@ export function DocumentsPage() {
                 <Empty className="border">
                   <EmptyHeader>
                     <EmptyMedia variant="icon"><UploadCloud /></EmptyMedia>
-                    <EmptyTitle>{demo ? 'Demo evidence is locked' : 'Drop files or click to ingest'}</EmptyTitle>
-                    <EmptyDescription>{demo ? 'Switch to Live to create an isolated evidence library.' : 'PDF, CSV, and text files supported'}</EmptyDescription>
+                    <EmptyTitle>Drop files or click to ingest</EmptyTitle>
+                    <EmptyDescription>{demo ? 'PDF, CSV, and text files return a simulated Demo result' : 'PDF, CSV, and text files supported'}</EmptyDescription>
                   </EmptyHeader>
                 </Empty>
               </FieldLabel>

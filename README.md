@@ -2,6 +2,8 @@
 
 Evidence-backed industrial knowledge intelligence for refinery compliance and failure analysis.
 
+![Brian AI technical architecture](./brian-ai-technical-architecture.png)
+
 Live app: https://brian-ai-app.vercel.app
 
 ## Demo Flow

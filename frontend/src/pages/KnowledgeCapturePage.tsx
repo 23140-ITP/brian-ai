@@ -43,22 +43,6 @@ export function KnowledgeCapturePage() {
 
   const reviewStep = questions.length + 1
 
-  if (demo) {
-    return (
-      <div className="flex flex-col gap-6">
-        <header className="flex flex-col gap-1">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">Expert Knowledge Capture</h1>
-          <p className="text-sm text-muted-foreground">The seeded demonstration is protected from writes.</p>
-        </header>
-        <Alert>
-          <FileText aria-hidden="true" />
-          <AlertTitle>Demo workspace is read-only</AlertTitle>
-          <AlertDescription>Switch to the Live workspace to capture an interview and add it to retrieval and the knowledge graph.</AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
-
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (step === 0) {
@@ -130,7 +114,7 @@ export function KnowledgeCapturePage() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Expert Knowledge Capture</h1>
-        <p className="text-sm text-muted-foreground">Preserve knowledge before it walks out the door.</p>
+        <p className="text-sm text-muted-foreground">{demo ? 'Try the complete interview workflow with a simulated Demo result.' : 'Preserve knowledge before it walks out the door.'}</p>
       </header>
 
       <form className="w-full max-w-3xl" onSubmit={submit}>

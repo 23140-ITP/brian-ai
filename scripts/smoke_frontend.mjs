@@ -279,11 +279,11 @@ async function verifyGraphDocumentHandoff(send) {
   const result = await evaluate(send, `
     (async () => {
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-      const node = document.querySelector('[role="button"][aria-label="Select P-204B"]')
+      const node = document.querySelector('[role="button"][aria-label^="Select P-204B"]')
       if (!node) return { ok: false, reason: 'P-204B graph node missing' }
       node.dispatchEvent(new MouseEvent('click', { bubbles: true }))
       await wait(100)
-      const filename = 'Pump-P204-Vibration-Analysis-2024.pdf'
+      const filename = 'Incident-2023-07-15-P204B-Seal-Failure.pdf'
       const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.includes(filename))
       if (!button) return { ok: false, reason: 'related document button missing' }
       button.click()
@@ -440,7 +440,9 @@ async function main() {
     const fieldInteraction = await verifyFieldInteraction(send)
     const desktopSidebar = await verifyDesktopSidebar(send)
     const mobile = await verifyMobileShell(send)
-    const liveAccessPrompt = await verifyLiveAccessPrompt(send)
+    const liveAccessPrompt = process.argv.includes('--demo-only')
+      ? { skipped: true, reason: 'Demo-only build has no live API URL' }
+      : await verifyLiveAccessPrompt(send)
     await send('Target.closeTarget', { targetId: target.id }).catch(() => undefined)
     ws.close()
 

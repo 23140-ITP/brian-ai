@@ -12,3 +12,4 @@ frontend/design-concept.png
 frontend/qa-*.png
 backend/.env
 .smoke-data/
+.gstack/

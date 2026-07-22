@@ -362,7 +362,22 @@ export const api = {
     }
   },
   ingestDocument: async (file: File, onProgress?: (progress: IngestProgress) => void) => {
-    if (readWorkspace() === 'demo') throw new Error('The demo workspace is read-only. Switch to Live to ingest documents.')
+    if (readWorkspace() === 'demo') {
+      const steps = ['Extracting text', 'Chunking', 'Indexing vectors', 'Extracting entities', 'Running pattern detection']
+      steps.forEach((step, index) => onProgress?.({ current: index + 1, total: steps.length, step }))
+      return {
+        doc_id: file.name,
+        chunks: 12,
+        entities: 3,
+        alerts_triggered: 1,
+        ingested_at: '2026-07-22',
+        impact_receipt: {
+          ...demoImpactReceipt,
+          document: { filename: file.name, docType: file.name.toLowerCase().endsWith('.csv') ? 'Work Orders' : 'Demo Upload' },
+          provenance: { ...demoImpactReceipt.provenance, newEvidence: file.name }
+        }
+      }
+    }
     const body = new FormData()
     body.append('file', file)
     const response = await fetch(`${API_BASE}/api/ingest`, { method: 'POST', headers: writeHeaders({ Accept: 'text/event-stream' }), body })
@@ -399,6 +414,10 @@ export const api = {
     return result
   },
   ocrNameplate: async (file: File) => {
+    if (readWorkspace() === 'demo') {
+      const detectedTag = file.name.toUpperCase().match(/(?:P|V|HE|K|T)[-_ ]?\d{3}[A-Z]?/)?.[0]?.replace(/[_ ]/, '-') || 'P-204B'
+      return { tag: detectedTag, confidence: 0.96, provider: 'demo-simulator' }
+    }
     const body = new FormData()
     body.append('file', file)
     const response = await fetch(`${API_BASE}/api/ocr/nameplate`, { method: 'POST', headers: requestHeaders(), body })
@@ -419,7 +438,13 @@ export const api = {
     'What would you tell the next shift engineer before handing over?'
   ]),
   captureExpertKnowledge: async (payload: { session_id: string; expert_name: string; topic: string; answers: Array<{ question: string; answer: string }> }) => {
-    if (readWorkspace() === 'demo') throw new Error('The demo workspace is read-only. Switch to Live to capture knowledge.')
+    if (readWorkspace() === 'demo') {
+      return {
+        doc_id: `Expert-Interview-${payload.expert_name.trim().replace(/[^a-z0-9]+/gi, '-') || 'Demo'}.md`,
+        status: 'simulated',
+        linked_entities: ['P-204B', 'A. Rao', 'Incident-P204']
+      }
+    }
     const response = await fetch(`${API_BASE}/api/capture`, {
       method: 'POST',
       headers: writeHeaders({ 'Content-Type': 'application/json' }),
@@ -453,6 +478,17 @@ export const api = {
     method: 'No live benchmark suite is configured.'
   }),
   benchmarkSpotCheck: async (index: number) => {
+    if (readWorkspace() === 'demo') {
+      const row = benchmarkResults[index] || benchmarkResults[0]
+      return {
+        ...row,
+        liveAnswer: row.answer,
+        liveLatencyS: Math.max(0.8, row.latencyS - 0.4),
+        liveCitations: ['Incident-2023-07-15-P204B-Seal-Failure.pdf', 'work-orders-2022-2024.csv'],
+        liveConfidence: row.correct ? 0.94 : 0.72,
+        cacheDelta: 'Demo replay matched the cached evaluation'
+      }
+    }
     const response = await fetch(`${API_BASE}/api/benchmark/spot-check/${index}`, { method: 'POST', headers: requestHeaders() })
     if (!response.ok) throw new Error(response.statusText)
     return (await response.json()) as BenchmarkResult & {
@@ -469,8 +505,23 @@ export const api = {
   }),
   graphCompleteness: () => getJson('/api/graph/completeness', { totalTags: 73, linkedTags: 64, score: 0.877, nodes: 73, edges: 47 }, { totalTags: 0, linkedTags: 0, score: 0, nodes: 0, edges: 0 }),
   graphPath: async (source: string, targetType: string) => {
+    if (readWorkspace() === 'demo') {
+      const sourceNode = graphNodes.find((node) => node.id === source) || graphNodes[0]
+      const targetNode = graphNodes.find((node) => node.type === targetType && node.id !== source) || graphNodes[4]
+      return {
+        source,
+        targetType,
+        records: [{
+          source,
+          target: targetNode.id,
+          targetType,
+          depth: 1,
+          path: [sourceNode, targetNode].map(({ id, label, type }) => ({ id, label, type })),
+          relationships: ['DEMO_EVIDENCE_LINK']
+        }]
+      }
+    }
     if (dataMode === 'demo') {
-      if (readWorkspace() === 'demo') return { source, targetType, records: [] }
       throw new Error('Live backend unavailable')
     }
 
