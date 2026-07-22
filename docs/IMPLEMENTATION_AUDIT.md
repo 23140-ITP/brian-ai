@@ -28,6 +28,7 @@ This audit records the verified local and public build as of 2026-07-22.
 - Neo4j production path has an optional async driver singleton, schema constraints, FastAPI lifespan cleanup, and a 60-minute AuraDB heartbeat task that no-ops safely without credentials.
 - Railway Docker startup now runs `/startup.sh`, which seeds `/data/corpus`, the benchmark cache, and the SQLite vector cache on a fresh persistent volume.
 - Generated PowerPoint pitch deck and rendered slide previews.
+- Generated 233-second narrated 720p demo video at `docs/Brian_AI_demo_video.mp4`, with H.264 video and AAC audio tracks.
 - Demo video script exists at `docs/DEMO_VIDEO_SCRIPT.md` and maps the app routes to a five-minute recording flow.
 - Public links checklist exists at `docs/PUBLIC_LINKS_CHECKLIST.md` and covers Railway backend, Vercel frontend, pitch deck, and demo video URL handoff.
 - Settings includes production-readiness checks for OpenRouter, field vision OCR, Neo4j, public CORS, persistent index storage, and public URLs, plus a submission-readiness panel mapping Brian AI to the working prototype, pitch deck, demo-video script, public links checklist, submission runbook, evidence audit, and the six hackathon judging criteria.
@@ -75,8 +76,7 @@ Latest frontend build emits separate route chunks such as `DashboardPage-*`, `Kn
 - Public query verification returns a cited P-204B answer; graph lookup returns three regulation paths; compliance returns 18 rows.
 - Local verification passes 20 backend tests, backend compilation, backend smoke, and the frontend production build.
 
-## Remaining Submission Tasks
+## Pilot Follow-up Validation
 
-- Record and publish the demo video; the recording script is complete but the public video URL still needs to be added to `docs/PUBLIC_LINKS_CHECKLIST.md`.
 - Real mobile-device PWA install prompt verification has not been performed; browser QA verifies service worker registration, Field shell cache population, and offline `/field` navigation under network emulation.
 - Representative real-world nameplate images should be retained as pilot evaluation evidence even though the production vision provider is configured.

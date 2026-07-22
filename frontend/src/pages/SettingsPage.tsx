@@ -34,6 +34,7 @@ const judgingCriteria = [
 const submissionArtifacts = [
   { label: 'Working prototype', value: 'Open Brian AI', href: 'https://brian-ai-app.vercel.app' },
   { label: 'Pitch deck', value: 'Open pitch deck', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_pitch_deck.pptx' },
+  { label: 'Demo video', value: 'Watch narrated demo', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_demo_video.mp4' },
   { label: 'Demo video script', value: 'Open recording script', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/DEMO_VIDEO_SCRIPT.md' },
   { label: 'Public links checklist', value: 'Open checklist', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/PUBLIC_LINKS_CHECKLIST.md' },
   { label: 'Submission runbook', value: 'Open runbook', href: 'https://github.com/23140-ITP/brian-ai/blob/main/docs/SUBMISSION.md' },
@@ -229,7 +230,7 @@ export function SettingsPage() {
           <CardTitle>Brian AI is packaged around the judging story.</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">Working prototype, pitch deck, demo video script, and verification evidence are tracked as first-class submission artifacts for public-link submission.</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">Working prototype, pitch deck, narrated demo video, recording script, and verification evidence are tracked as first-class submission artifacts for public-link submission.</p>
           <div className="grid gap-4 md:grid-cols-2">
             <Card size="sm">
               <CardHeader>
