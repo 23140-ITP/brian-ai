@@ -5,7 +5,6 @@ Use this checklist before submitting Brian AI to the ET AI Hackathon portal.
 ## Required Links
 
 - Working prototype: https://brian-ai-app.vercel.app
-- Backend health: https://brian-ai-production.up.railway.app/health
 - Pitch deck: https://github.com/23140-ITP/brian-ai/blob/main/docs/Brian_AI_pitch_deck.pdf
 - Demo video: https://youtu.be/t_bUzOsV0ag
 
