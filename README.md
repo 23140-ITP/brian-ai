@@ -4,7 +4,7 @@
 
 Brian AI turns fragmented plant documents, compliance clauses, maintenance records, incident reports, and expert knowledge into cited answers and operational actions. The hackathon prototype unifies a 20-document refinery corpus, detects recurring equipment failure patterns, checks 18 OISD/PESO clauses, traces equipment-to-regulation paths, and serves the same knowledge in a field-ready PWA.
 
-[Launch the live app](https://brian-ai-app.vercel.app/app) · [Watch the demo](docs/Brian_AI_demo_video.mp4) · [Read the pitch deck](docs/Brian_AI_pitch_deck.pdf) · [Check API health](https://brian-ai-production.up.railway.app/health)
+[Launch the live app](https://brian-ai-app.vercel.app/app) · [Read the pitch deck](docs/Brian_AI_pitch_deck.pdf) · [Check API health](https://brian-ai-production.up.railway.app/health)
 
 ## Why this matters
 
@@ -276,7 +276,6 @@ assets/readme/       Fresh desktop screenshots from the deployed app
 ## Submission assets
 
 - [10-page pitch deck](docs/Brian_AI_pitch_deck.pdf)
-- [Narrated demo video](docs/Brian_AI_demo_video.mp4)
 - [Five-minute demo script](docs/DEMO_VIDEO_SCRIPT.md)
 - [Hackathon submission guide](docs/SUBMISSION.md)
 - [Implementation audit](docs/IMPLEMENTATION_AUDIT.md)
